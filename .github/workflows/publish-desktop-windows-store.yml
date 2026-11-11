@@ -1,0 +1,89 @@
+name: publish-desktop-windows-store
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build (branch, tag, or full SHA). Defaults to the dispatch ref.'
+        required: false
+        default: ''
+      runtime_environment:
+        description: 'Relay environment URL baked into the desktop package.'
+        required: true
+        default: 'Staging'
+        type: choice
+        options:
+          - Staging
+          - Production
+      publish_to_store:
+        description: 'Submit the built MSIX package to Microsoft Store Partner Center.'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-desktop-windows-store-${{ inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish desktop msix to windows store
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      WINDOWS_TFM: net10.0-windows10.0.19041.0
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install MAUI Windows workload
+        run: dotnet workload install maui-windows
+
+      - name: Publish MSIX package
+        shell: pwsh
+        run: |
+          $RelayUrl = if ('${{ inputs.runtime_environment }}' -eq 'Production') {
+            'https://prod.botanicsoft.com/orchid'
+          } else {
+            'https://stag.botanicsoft.com/orchid'
+          }
+          dotnet publish src/Orchid.Desktop.csproj `
+            -f $env:WINDOWS_TFM `
+            -c Release `
+            -r win-x64 `
+            -p:WindowsPackageType=MSIX `
+            -p:OrchidRelayUrl=$RelayUrl `
+            -p:EnforceCodeStyleInBuild=false
+
+      - name: Submit to Microsoft Store
+        if: ${{ inputs.publish_to_store }}
+        shell: pwsh
+        env:
+          MSSTORE_TENANT_ID: ${{ secrets.MSSTORE_TENANT_ID }}
+          MSSTORE_CLIENT_ID: ${{ secrets.MSSTORE_CLIENT_ID }}
+          MSSTORE_CLIENT_SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          MSSTORE_SELLER_ID: ${{ secrets.MSSTORE_SELLER_ID }}
+          MSSTORE_APP_ID: ${{ secrets.MSSTORE_APP_ID }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MSSTORE_APP_ID)) {
+            throw 'MSSTORE_APP_ID secret is required for Windows Store submission.'
+          }
+          $Msix = Get-ChildItem -Path src/bin/Release -Recurse -Filter '*.msix' | Select-Object -First 1
+          if ($null -eq $Msix) {
+            throw 'MSIX package was not generated under src/bin/Release.'
+          }
+          msstore reconfigure `
+            --tenantId $env:MSSTORE_TENANT_ID `
+            --sellerId $env:MSSTORE_SELLER_ID `
+            --clientId $env:MSSTORE_CLIENT_ID `
+            --clientSecret $env:MSSTORE_CLIENT_SECRET
+          msstore publish $Msix.FullName --appId $env:MSSTORE_APP_ID --noCommit false
