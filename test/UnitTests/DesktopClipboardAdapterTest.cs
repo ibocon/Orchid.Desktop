@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Orchid.UnitTests.Desktop;
 
-public sealed class DesktopClipboardAdapterTests
+public sealed class DesktopClipboardAdapterTest
 {
     [Fact]
     public async Task Adapter_Should_Notify_Core_When_Clipboard_Content_Changes()

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Orchid.UnitTests.Desktop;
 
-public sealed class DesktopGardenRazorDiRegistrationTests
+public sealed class DesktopGardenRazorDiRegistrationTest
 {
     [Fact]
     public void GivenDesktopServiceCollection_WhenRegisteringGardenRazor_ThenServicesAreResolvable()
