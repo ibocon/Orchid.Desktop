@@ -13,10 +13,10 @@
 
   <PropertyGroup>
     <Authors>Yegun Kim (@ibocon)</Authors>
-    <Company>BotanicSoft</Company>
+    <Company>Orchid Project</Company>
     <Product>Orchid Universal E2EE Clipboard Ecosystem</Product>
     <Copyright>Copyright (c) 2026 Yegun Kim</Copyright>
-    <RepositoryUrl>https://github.com/BotanicSoft/Orchid.Desktop</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ibocon/Orchid.Desktop</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>
