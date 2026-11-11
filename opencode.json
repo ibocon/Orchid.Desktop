@@ -1,0 +1,149 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "garden-csharp-diagnostics@file:./lib/Garden.Harness/src/opencode/plugin"
+  ],
+  "mcp": {
+    "docker": {
+      "type": "local",
+      "command": [
+        "docker",
+        "mcp",
+        "gateway",
+        "run"
+      ],
+      "enabled": true
+    },
+    "garden-observability": {
+      "type": "local",
+      "command": [
+        "node",
+        "lib/Garden.Harness/src/agents/mcp/mcp-stdio-aggregator.mjs",
+        "--config",
+        "lib/Garden.Harness/src/agents/mcp/observability-upstreams.json"
+      ],
+      "enabled": true,
+      "timeout": 300000
+    },
+    "prometheus": {
+      "type": "local",
+      "command": [
+        "node",
+        "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+        "--lazy",
+        "prometheus",
+        "--",
+        "pwsh",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "lib/Garden.Harness/src/agents/mcp/Invoke-PrometheusMcpServer.ps1"
+      ],
+      "enabled": true,
+      "timeout": 300000
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "node",
+        "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+        "--lazy",
+        "playwright",
+        "--",
+        "pwsh",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "lib/Garden.Harness/src/playwright/scripts/Invoke-PlaywrightMcpServer.ps1",
+        "-Channel",
+        "edge-debug"
+      ],
+      "enabled": true
+    },
+    "playwright-webview2": {
+      "type": "local",
+      "command": [
+        "node",
+        "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+        "--lazy",
+        "playwright-webview2",
+        "--",
+        "pwsh",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "lib/Garden.Harness/src/playwright/scripts/Invoke-PlaywrightMcpServer.ps1",
+        "-Channel",
+        "webview2"
+      ],
+      "enabled": true
+    },
+    "sentry": {
+      "type": "remote",
+      "url": "https://mcp.sentry.dev/mcp/{env:SENTRY_MCP_ORG}",
+      "oauth": {}
+    },
+    "posthog": {
+      "type": "remote",
+      "url": "https://mcp.posthog.com/mcp",
+      "oauth": {},
+      "enabled": true
+    },
+    "amplitude": {
+      "type": "remote",
+      "url": "https://mcp.amplitude.com/mcp",
+      "oauth": {},
+      "enabled": true
+    },
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.com/mcp",
+      "oauth": {}
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp/oauth",
+      "oauth": {},
+      "enabled": true
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "oauth": false,
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "microsoft-learn": {
+      "type": "remote",
+      "url": "https://learn.microsoft.com/api/mcp",
+      "enabled": true
+    },
+    "penpot": {
+      "type": "remote",
+      "url": "http://localhost:4401/mcp",
+      "enabled": true,
+      "timeout": 300000
+    },
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "pwsh",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "lib/Garden.Harness/src/agents/mcp/Invoke-CodegraphMcpServer.ps1"
+      ],
+      "enabled": true,
+      "timeout": 180000
+    },
+    "figma-desktop": {
+      "enabled": false
+    }
+  }
+}

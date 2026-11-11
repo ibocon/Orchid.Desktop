@@ -1,0 +1,18 @@
+@namespace Orchid.Desktop.Component
+
+<OrchidDesktopDesignSystemProvider @ref="_provider" />
+<MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="true" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudMainContent Class="pa-4">
+        <PairingPanel />
+        <ClipboardList />
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private OrchidDesktopDesignSystemProvider? _provider;
+}

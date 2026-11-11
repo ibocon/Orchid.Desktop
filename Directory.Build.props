@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworks)' == ''">net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <RollForward>Major</RollForward>
+    <DefaultItemExcludes Condition="'$(IsTestProject)' != 'true'">$(DefaultItemExcludes);test\**;tests\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Yegun Kim (@ibocon)</Authors>
+    <Company>BotanicSoft</Company>
+    <Product>Orchid Universal E2EE Clipboard Ecosystem</Product>
+    <Copyright>Copyright (c) 2026 Yegun Kim</Copyright>
+    <RepositoryUrl>https://github.com/BotanicSoft/Orchid.Desktop</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,527 @@
+# Root
+
+# EditorConfig 을 이해하는데 참고할 만한 자료 목록
+# 1. EditorConfig (https://EditorConfig.org)
+# 2. EditorConfig Specification (https://editorconfig-specification.readthedocs.io/)
+# 3. Example file (https://editorconfig.org/#example-file)
+# 4. Code style rule options (https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/code-style-rule-options)
+# 5. EditorConfig Reference for C# Developers (https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers)
+
+# Severity : error, warning, suggestion, silent, none, default (https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers)
+
+root = true
+
+[*]
+indent_style = space
+indent_size = unset
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{css,scss,js,html,csproj,props,targets,xml,config}]
+indent_size = 2
+
+[*.{razor,cshtml}]
+indent_style = space
+indent_size = 4
+html.format.wrapAttributes = force-aligned
+html.format.wrapLineLength = 1
+csharp_style_wrap_parameters_in_multiple_lines = true
+
+[*.cs]
+indent_size = 4
+
+# 1. Severity level
+
+# Default severity for all analyzer diagnostics
+# Directory.Build.props 가 AnalysisMode=All 을 쓰므로 이 블랭킷은 .NET SDK 의 CA 규칙에는
+# 적용되지 않는다. AnalysisMode<Category> 로 바꿔도 같다 (2026-09-18 실측 반증).
+# 따라서 이 줄은 서드파티 애널라이저(StyleCop·Sonar·Roslynator·xunit·Garden)와 IDE 규칙 담당이고,
+# CA 규칙의 심각도는 아래 개별 선언으로만 지정한다.
+# 상세: docs/planning/260918_refac_analysismode-all-nullifies-editorconfig-blanket-severity.md
+dotnet_analyzer_diagnostic.severity = error
+
+# 1.0. 상환 대기 CA 규칙 (개별 선언)
+#
+# 아래 17규칙은 블랭킷이 닿지 않아 SDK 기본값 warning 으로 방치돼 있던 것을 명시 선언으로 옮긴 것이다.
+# 심각도를 낮춘 것이 아니라 암묵적 방치를 추적 가능한 부채로 전환한 것이며,
+# 각 후속 계획이 상환을 끝내면 해당 줄을 error 로 올린다.
+
+# CA1873: Avoid potentially expensive logging - 107건 상환 완료
+# 후속 계획: docs/history/2609/W3/260918/260918_refac_ca1873-expensive-logging-argument-evaluation.md
+dotnet_diagnostic.CA1873.severity = error
+
+# CA1825: Avoid zero-length array allocations - 26건 상환 완료
+# 후속 계획: docs/history/2609/W3/260919/260919_refac_ca1825-avoid-zero-length-array-allocations.md
+dotnet_diagnostic.CA1825.severity = error
+
+# CA1707: Identifiers should not contain underscores - [src/**/test/**/*.cs] 에서 api_surface 한정
+# 후속 계획: docs/planning/260918_refac_ca1707-underscore-identifiers-in-test-projects.md
+dotnet_diagnostic.CA1707.severity = error
+
+# 아래 11규칙 62건 상환 대기 (규칙별 개별 상환 계획서 분할 완료)
+# CA1859: docs/planning/260919_refac_ca1859-use-concrete-types-for-performance.md
+dotnet_diagnostic.CA1859.severity = error
+# CA1812: docs/planning/260919_refac_ca1812-avoid-uninstantiated-internal-classes.md
+dotnet_diagnostic.CA1812.severity = error
+# CA1869: docs/planning/260919_refac_ca1869-cache-json-serializer-options.md
+dotnet_diagnostic.CA1869.severity = error
+# CA2234: docs/planning/260919_refac_ca2234-pass-uri-objects-instead-of-strings.md
+dotnet_diagnostic.CA2234.severity = error
+# CA5394: docs/planning/260919_refac_ca5394-insecure-randomness-review.md
+dotnet_diagnostic.CA5394.severity = error
+# CA3012: docs/planning/260919_refac_ca3012-regex-injection-review.md
+dotnet_diagnostic.CA3012.severity = error
+# CA1861: docs/planning/260919_refac_ca1861-cache-constant-arrays-as-arguments.md
+dotnet_diagnostic.CA1861.severity = error
+# CA2241: docs/planning/260919_refac_ca2241-string-formatting-arguments.md
+dotnet_diagnostic.CA2241.severity = error
+# CA2016: docs/planning/260919_refac_ca2016-forward-cancellation-token.md
+dotnet_diagnostic.CA2016.severity = error
+# CA2215: docs/planning/260919_refac_ca2215-call-base-dispose.md
+dotnet_diagnostic.CA2215.severity = error
+# CA1819: docs/planning/260919_refac_ca1819-properties-should-not-return-arrays.md
+dotnet_diagnostic.CA1819.severity = error
+
+# 결함 신호 3종 - 원인 규명 선행이라 상환이 아니라 조사 대상이다.
+# CA2025: Do not pass 'IDisposable' instances into unawaited tasks - 16건 상환 완료
+# 후속 계획: docs/history/2609/W3/260918/260918_fix_ca2025-disposable-into-unawaited-task.md
+dotnet_diagnostic.CA2025.severity = error
+
+# CA1001: Types that own disposable fields should be disposable - 6건 상환 완료
+# 후속 계획: docs/history/2609/W3/260918/260918_fix_ca1001-undisposed-owner-types.md
+dotnet_diagnostic.CA1001.severity = error
+
+# CA2100: Review SQL queries for security vulnerabilities - 3건 상환 완료
+# 후속 계획: docs/planning/260918_fix_ca2100-sql-injection-review.md
+dotnet_diagnostic.CA2100.severity = error
+
+# 1.1. Roslyn(.NET compiler platform) Analyzers (https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview)
+
+# CA1040: Avoid empty interfaces
+dotnet_diagnostic.CA1040.severity = suggestion
+
+# CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = suggestion
+
+# CA1063: Implement IDisposable Correctly
+dotnet_diagnostic.CA1063.severity = suggestion
+
+# CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = error
+
+# CA1307: Specify StringComparison for clarity
+dotnet_diagnostic.CA1307.severity = suggestion
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# CA2000: Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = suggestion
+
+# CA2007: Consider calling ConfigureAwait on the awaited task
+# ✅ convention/configure-await.md 1절 - 라이브러리 계층은 의도를 코드로 표현한다.
+dotnet_diagnostic.CA2007.severity = error
+
+# CA1848: Use the LoggerMessage delegates
+dotnet_diagnostic.CA1848.severity = suggestion
+
+# CA1515: Consider making public types internal
+dotnet_diagnostic.CA1515.severity = suggestion
+
+# CS1573: Parameter has no matching param tag in the XML comment (but other parameters do)
+dotnet_diagnostic.CS1573.severity = suggestion
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = suggestion
+
+# IDE0001: Simplify Names
+dotnet_diagnostic.IDE0001.severity = suggestion
+
+# IDE0002: Simplify Member Access
+dotnet_diagnostic.IDE0002.severity = suggestion
+
+# IDE0010: Add missing cases
+dotnet_diagnostic.IDE0010.severity = suggestion
+
+# IDE0027: Use expression body for accessors
+dotnet_diagnostic.IDE0027.severity = warning
+
+# IDE0032: Use auto property
+dotnet_diagnostic.IDE0032.severity = warning
+
+# 24.08.04 [예건] Serilog 사용할 때 명확하게 Member 이름을 지정하기 위해 suggestion으로 변경했습니다.
+# IDE0037: Use inferred member name
+dotnet_diagnostic.IDE0037.severity = suggestion
+
+# IDE0042: Deconstruct variable declaration
+dotnet_diagnostic.IDE0042.severity = suggestion
+
+# IDE0044: Add readonly modifier
+dotnet_diagnostic.IDE0044.severity = warning
+
+# IDE0045: Convert to conditional expression
+dotnet_diagnostic.IDE0045.severity = suggestion
+
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = warning
+
+# IDE0052: Remove unread private members
+dotnet_diagnostic.IDE0052.severity = warning
+
+# IDE0058: Expression value is never used
+# 21.11.29 [예건] TODO Anlayzer 의 성능을 개선하기 위해 none 으로 설정했다. (https://github.com/dotnet/roslyn/issues/47832)
+dotnet_diagnostic.IDE0058.severity = none
+
+# IDE0060: Remove unused parameter
+dotnet_diagnostic.IDE0060.severity = warning
+
+# IDE0072: Add missing cases
+dotnet_diagnostic.IDE0072.severity = suggestion
+
+# IDE0074: Use compound assignment
+# 22.08.11 [예건] 이유를 알 수 없지만 Azure DevOps Pipeline에서만 Docker image를 빌드할 때 오류가 발생합니다.
+dotnet_diagnostic.IDE0074.severity = warning
+
+# IDE0079: Remove unnecessary suppression
+dotnet_diagnostic.IDE0079.severity = warning
+
+# IDE0130: Namespace does not match folder structure
+# 21.11.29 [예건] TODO Roslyn 이 file-scoped namespaces 를 처리하지 못해 none 로 설정했다. (https://github.com/dotnet/roslyn/issues/54749)
+dotnet_diagnostic.IDE0130.severity = none
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = suggestion
+
+# IDE0305: Simplify collection initialization
+dotnet_diagnostic.IDE0305.severity = suggestion
+
+# 1.2. Sonar Analyzers (https://rules.sonarsource.com/csharp)
+
+# S125: Sections of code should not be commented out
+dotnet_diagnostic.S125.severity = suggestion
+
+# S1075: URIs should not be hardcoded
+dotnet_diagnostic.S1075.severity = suggestion
+
+# S1133: Deprecated code should be removed
+dotnet_diagnostic.S1133.severity = suggestion
+
+# S1135: Track uses of "TODO" tags
+dotnet_diagnostic.S1135.severity = warning
+
+# S1144: Unused private types or members should be removed
+dotnet_diagnostic.S1144.severity = warning
+
+# S1450: Private fields only used as local variables in methods should become local variables
+dotnet_diagnostic.S1450.severity = suggestion
+
+# S1481: Unused local variables should be removed
+dotnet_diagnostic.S1481.severity = warning
+
+# S1172: Unused method parameters should be removed
+# 22.04.12 [예건] 원인을 알 수 없지만, false positive인 경우가 많아 suggestion으로 설정했습니다.
+dotnet_diagnostic.S1172.severity = suggestion
+
+# S2139: Exceptions should be either logged or rethrown but not both
+dotnet_diagnostic.S2139.severity = suggestion
+
+# S2292: Trivial properties should be auto-implemented
+dotnet_diagnostic.S2292.severity = warning
+
+# S2325: Methods and properties that don't access instance data should be static
+dotnet_diagnostic.S2325.severity = suggestion
+
+# S2326: Unused type parameters should be removed
+dotnet_diagnostic.S2326.severity = suggestion
+
+# S2629: Logging templates should be constant
+dotnet_diagnostic.S2629.severity = suggestion
+
+# S2933: Fields that are only assigned in the constructor should be "readonly"
+dotnet_diagnostic.S2933.severity = warning
+
+# S3267: Loops should be simplified with "LINQ" expressions
+dotnet_diagnostic.S3267.severity = suggestion
+
+# S3881: "IDisposable" should be implemented correctly
+# 22.03.13 [예건] Dispose 패턴을 구현하는 방법을 강제하여 해제했다.
+dotnet_diagnostic.S3881.severity = none
+
+# S3925: "ISerializable" should be implemented correctly
+# 24.05.06 [예건] https://learn.microsoft.com/en-us/dotnet/fundamentals/syslib-diagnostics/syslib0051
+dotnet_diagnostic.S3925.severity = none
+
+# S3963: "static" fields should be initialized inline
+dotnet_diagnostic.S3963.severity = suggestion
+
+# S4457: Parameter validation in "async"/"await" methods should be wrapped
+dotnet_diagnostic.S4457.severity = suggestion
+
+# S4487: Unread "private" fields should be removed
+dotnet_diagnostic.S4487.severity = warning
+
+# 1.3. StyleCop Analyzers (https://github.com/DotNetAnalyzers/StyleCopAnalyzers/tree/master/documentation)
+
+# SA1000: Keywords should be spaced correctly
+dotnet_diagnostic.SA1000.severity = none
+
+# SA1005: Single line comments should begin with single space
+dotnet_diagnostic.SA1005.severity = suggestion
+
+# SA1009: Closing parenthesis should be spaced correctly
+dotnet_diagnostic.SA1009.severity = none
+
+# SA1010: Opening square brackets should be spaced correctly
+dotnet_diagnostic.SA1010.severity = none
+
+# SA1011: Closing square brackets should be spaced correctly
+dotnet_diagnostic.SA1011.severity = none
+
+# SA1027: Use tabs correctly
+dotnet_diagnostic.SA1027.severity = warning
+
+# SA1101: Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = none
+
+# SA1106: Code should not contain empty statements
+dotnet_diagnostic.SA1106.severity = none
+
+# SA1124: Do not use regions
+dotnet_diagnostic.SA1124.severity = none
+
+# SA1204: Static elements should appear before instance elements
+dotnet_diagnostic.SA1204.severity = suggestion
+
+# SA1309: Field names should not begin with underscore
+dotnet_diagnostic.SA1309.severity = none
+
+# SA1402: File may only contain a single type
+dotnet_diagnostic.SA1402.severity = suggestion
+
+# SA1512: Single-line comments should not be followed by blank line
+dotnet_diagnostic.SA1512.severity = suggestion
+
+# SA1515: Single-line comment should be preceded by blank line
+dotnet_diagnostic.SA1515.severity = suggestion
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = suggestion
+
+# SA1601: Partial elements should be documented
+dotnet_diagnostic.SA1601.severity = suggestion
+
+# SA1611: Element parameters should be documented
+dotnet_diagnostic.SA1611.severity = suggestion
+
+# SA1614: Element parameter documentation should have text
+dotnet_diagnostic.SA1614.severity = suggestion
+
+# SA1615: Element return value should be documented
+dotnet_diagnostic.SA1615.severity = suggestion
+
+# SA1618: Generic type parameters should be documented
+dotnet_diagnostic.SA1618.severity = suggestion
+
+# SA1623: Property summary documentation should match accessors
+dotnet_diagnostic.SA1623.severity = none
+
+# SA1629: Documentation text should end with a period
+dotnet_diagnostic.SA1629.severity = suggestion
+
+# SA1633: File should have header
+dotnet_diagnostic.SA1633.severity = none
+
+# SA1642: Constructor summary documentation should begin with standard text
+dotnet_diagnostic.SA1642.severity = none
+
+# SA1649: File name should match first type name
+dotnet_diagnostic.SA1649.severity = suggestion
+
+# 1.4 Roslynator Analyzers
+
+# RCS1021: Convert lambda expression body to expression body
+dotnet_diagnostic.RCS1021.severity = suggestion
+
+# RCS1073: Convert 'if' to 'return' statement
+dotnet_diagnostic.RCS1073.severity = suggestion
+
+# RCS1085: Use auto-implemented property.
+dotnet_diagnostic.RCS1085.severity = warning
+
+# RCS1141: Add 'param' element to documentation comment.
+dotnet_diagnostic.RCS1141.severity = suggestion
+
+# RCS1124: Inline local variable.
+dotnet_diagnostic.RCS1124.severity = warning
+
+# RCS1140: Add exception to documentation comment.
+dotnet_diagnostic.RCS1140.severity = suggestion
+
+# RCS1142: Add 'typeparam' element to documentation comment
+dotnet_diagnostic.RCS1142.severity = suggestion
+
+# RCS1158: Static member in generic type should use a type parameter
+dotnet_diagnostic.RCS1158.severity = silent
+
+# RCS1163: Unused parameter.
+dotnet_diagnostic.RCS1163.severity = warning
+
+# RCS1169: Make field read-only.
+dotnet_diagnostic.RCS1169.severity = warning
+
+# RCS1175: Unused this parameter.
+dotnet_diagnostic.RCS1175.severity = warning
+
+# RCS1188: Remove redundant auto-property initialization
+dotnet_diagnostic.RCS1188.severity = suggestion
+
+# RCS1194: Implement exception constructors
+dotnet_diagnostic.RCS1194.severity = suggestion
+
+# RCS1217: Convert interpolated string to concatenation.
+dotnet_diagnostic.RCS1217.severity = none
+
+# RCS1225: Make class sealed.
+dotnet_diagnostic.RCS1225.severity = warning
+
+# 2. Language rules (https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/language-rules)
+# Language rules 은 default 가 있으므로, 예외만 수정한다.
+
+# IDE0046: Convert to conditional expression
+dotnet_style_prefer_conditional_expression_over_return = false
+
+# 3. Formatting rules (https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules)
+# Formatting rules 은 default 가 없으므로, 지정한다.
+
+# Organize using directives
+dotnet_sort_system_directives_first = false
+dotnet_separate_import_directive_groups = false
+
+# Dotnet namespace options
+dotnet_style_namespace_match_folder = false
+
+# Newline options
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+# Indentation options
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents_when_block = true
+
+# Spacing options
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_parentheses = false
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_after_comma = true
+csharp_space_before_comma = false
+csharp_space_after_dot = false
+csharp_space_before_dot = false
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_before_semicolon_in_for_statement = false
+csharp_space_around_declaration_statements = false
+csharp_space_before_open_square_brackets = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_square_brackets = false
+
+# Wrap options
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+# Using directive options
+csharp_using_directive_placement = outside_namespace
+
+# Namespace options
+csharp_style_namespace_declarations = file_scoped
+
+# 4. Naming rules (https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/naming-rules)
+# Naming rules 은 default 가 있으므로, 예외만 수정한다.
+
+[*.{cs,razor}]
+csharp_style_var_for_built_in_types = false:error
+csharp_style_var_when_type_is_apparent = false:error
+csharp_style_var_elsewhere = false:error
+dotnet_diagnostic.IDE0008.severity = error
+
+# 5. Path scoped exceptions
+
+# 26.06.19 [Codex] User-approved one-off exception.
+# Mobile 도메인 ubiquitous language인 Ledger/User/Product 타입명은 유지하고,
+# 서비스 client namespace와의 CA1724 충돌만 해당 aggregate 파일 3개로 제한해 비활성화한다.
+[src/Mobile/Core/src/Entity/{Ledger,User,Product}/Entity/{Ledger,User,Product}.cs]
+dotnet_diagnostic.CA1724.severity = none
+
+# 26.06.20 계획서 260620_refac_management-warnings-streaming.md.
+# Management 도메인 ubiquitous language인 User/Product 타입명은 유지하고,
+# Peony.User.Client/Peony.Product.Client namespace와의 CA1724 충돌만 해당 aggregate 파일 2개로 제한해 비활성화한다.
+[src/Management/src/Entity/{User,Product}/{User,Product}.cs]
+dotnet_diagnostic.CA1724.severity = none
+
+# 26.09.20 계획서 260918_refac_analyzer-debt-long-tail.md.
+# Autofill 도메인 ubiquitous language인 Counterparty 타입명은 유지하고,
+# Peony.Counterparty.Client namespace와의 CA1724 충돌만 해당 aggregate 파일 1개로 제한해 비활성화한다.
+[src/Service/Autofill/src/Entity/Counterparty/Counterparty.cs]
+dotnet_diagnostic.CA1724.severity = none
+
+# 26.06.21 User-approved one-off exception.
+# 머니매니저 백업 업로드는 운영자 전용 화면이며 OpenReadStream(25MB) 차등 상한은 의도된 것이다.
+# 실측 백업(8.36MB)이 S5693 임계(8MB)를 넘어 임계 아래로는 낮출 수 없고, 업로드 경로는 스트리밍이라
+# 전체 메모리 버퍼링이 없다. Razor 생성 코드의 #line 리매핑으로 inline #pragma가 동작하지 않아 path scoped로 억제한다.
+[src/Management/src/Feature/MoneyManagerImport/MoneyManagerImportPage.razor]
+dotnet_diagnostic.S5693.severity = none
+
+# 26.07.27 계획서 260727_feat_namespace-convention-analyzer.md.
+# GDNNS001은 src 제품 호스트가 260727_refac로 전수 0건이라 blanket error로 즉시 강제한다.
+# src/Mobile/Core는 260727_refac_mobile-core-namespace-root-gdnns001-promotion.md로 root 정합되어 예외 제거(src 전역 Error 복귀).
+# lib/**는 서브모듈 소유의 별도 후속(공유 Garden.UnitTests 결정)까지 Warning으로 유지한다.
+[lib/**.cs]
+dotnet_diagnostic.GDNNS001.severity = warning
+
+# 26.09.11 계획서 260910_refac_gdnmc-editorconfig-staged-severity.md Step 2.
+# 도입 시점 위반 23,066건을 전수 정리해 src 는 0건이 됐다. 신규 유입을 막으려 error 로 승격한다.
+# lib/** 는 서브모듈 소유 정리가 끝날 때까지 suggestion 을 유지한다. GDNNS001 과 같은 단계 승격이다.
+[*.cs]
+dotnet_diagnostic.GDNMC001.severity = error
+dotnet_diagnostic.GDNMC002.severity = error
+dotnet_diagnostic.GDNMC003.severity = error
+
+[lib/**.cs]
+dotnet_diagnostic.GDNMC001.severity = suggestion
+dotnet_diagnostic.GDNMC002.severity = suggestion
+dotnet_diagnostic.GDNMC003.severity = suggestion
+dotnet_diagnostic.CA1873.severity = warning
+
+# 6. Test project scoped policies
+[{src,test}/**/test/**/*.cs,test/**/*.cs]
+# CA1707: Identifiers should not contain underscores
+# 테스트 메서드 이름은 외부에 노출되지 않으므로 규칙의 목적 밖이다.
+dotnet_diagnostic.CA1707.severity = error
+dotnet_code_quality.CA1707.api_surface = private, internal
+
+# CA1825: Avoid zero-length array allocations
+# Roslyn-analyzers #6885: xUnit TheoryData 컬렉션 식의 컴파일러 합성 코드 오진단 방지
+dotnet_diagnostic.CA1825.severity = suggestion
+
+# CA2007: Consider calling ConfigureAwait on the awaited task
+# ✅ convention/configure-await.md 적용 범위가 테스트 프로젝트를 명시적 예외로 둔다.
+# 테스트에는 동기화 컨텍스트가 없어 ConfigureAwait 의 실익이 없다.
+dotnet_diagnostic.CA2007.severity = none

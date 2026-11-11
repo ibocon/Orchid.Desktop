@@ -1,0 +1,40 @@
+# 텍스트는 모두 LF로 정규화한다.
+# eol=lf는 text 경로에서 core.autocrlf을 무시하고 커밋·체크아웃 모두 LF로 고정한다.
+* text=auto eol=lf
+
+# 바이너리 자산은 정규화 대상에서 제외한다.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.bmp  binary
+*.webp binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.eot  binary
+*.ttc  binary
+*.icns binary
+*.pdf  binary
+*.zip  binary
+*.gz   binary
+*.7z   binary
+*.jar  binary
+*.nupkg binary
+*.snk  binary
+*.keystore binary
+*.jks  binary
+*.p12  binary
+*.pfx  binary
+*.dll  binary
+*.exe  binary
+*.so   binary
+*.dylib binary
+*.wasm binary
+*.mp4  binary
+*.mov  binary
+*.webm binary
+*.mp3  binary
+*.wav  binary

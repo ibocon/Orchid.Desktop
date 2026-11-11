@@ -1,0 +1,28 @@
+@namespace Orchid.Desktop.Component
+@using Orchid.Core.Sync
+@using Orchid.Core.Sync.Relay
+@inject ClipboardSyncCoordinator Coordinator
+
+<MudPaper Elevation="2" Class="pa-6 d-flex flex-column gap-3 mb-4">
+    <MudText Typo="Typo.subtitle1">디바이스 페어링</MudText>
+    @if (_payload is null)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartAsync">페어링 시작</MudButton>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2">모바일에서 아래 키를 스캔하거나 입력하세요.</MudText>
+        <MudTextField T="string" Value="_payload" ReadOnly="true" Label="페어링 키" />
+    }
+</MudPaper>
+
+@code {
+    private string? _payload;
+
+    private async Task StartAsync()
+    {
+        PairingKey key = PairingKey.Generate();
+        await Coordinator.StartAsync(key, Guid.NewGuid());
+        _payload = key.ToPayload();
+    }
+}
