@@ -20,7 +20,7 @@
 
   <PropertyGroup>
     <!-- 기본은 staging, production 배포 시 -p:OrchidRelayUrl=... 로 덮어쓴다 -->
-    <OrchidRelayUrl Condition="'$(OrchidRelayUrl)' == ''">https://orchid.stag.botanicsoft.com</OrchidRelayUrl>
+    <OrchidRelayUrl Condition="'$(OrchidRelayUrl)' == ''">https://stag.botanicsoft.com/orchid</OrchidRelayUrl>
   </PropertyGroup>
 
   <ItemGroup>

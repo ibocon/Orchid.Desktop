@@ -32,4 +32,17 @@ public sealed class DesktopGardenRazorDiRegistrationTest
         presenter.Should().NotBeNull();
         designSystem.Should().NotBeNull();
     }
+
+    [Fact]
+    public void GivenSubpathRelayUrlWhenComposingHubUriThenOrchidSubpathIsPreserved()
+    {
+        // Given
+        const string relayUrl = "https://stag.botanicsoft.com/orchid";
+
+        // When
+        Uri hubUri = new(new Uri(relayUrl.TrimEnd('/') + "/"), "hubs/clipboard");
+
+        // Then
+        hubUri.AbsoluteUri.Should().Be("https://stag.botanicsoft.com/orchid/hubs/clipboard");
+    }
 }
