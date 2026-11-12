@@ -19,6 +19,9 @@ public sealed class DesktopWindowsStorePipelineContractTest
 
         // When & Then
         csproj.Should().Contain("WindowsPackageType Condition=\"'$(WindowsPackageType)' == ''\"");
+        csproj.Should().Contain("<ApplicationId>BotanicSoft.UniversalClipboardBridge</ApplicationId>");
+        manifest.Should().Contain("Name=\"BotanicSoft.UniversalClipboardBridge\"");
+        manifest.Should().Contain("Publisher=\"CN=97E323EE-349D-4541-B8DF-CEDEFF6EE455\"");
         manifest.Should().Contain("runFullTrust");
         workflow.Should().Contain("-p:WindowsPackageType=MSIX");
         workflow.Should().Contain("msstore publish");

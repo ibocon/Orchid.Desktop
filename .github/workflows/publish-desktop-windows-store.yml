@@ -64,6 +64,15 @@ jobs:
             -p:OrchidRelayUrl=$RelayUrl `
             -p:EnforceCodeStyleInBuild=false
 
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchid-desktop-msix-${{ inputs.runtime_environment }}
+          path: |
+            src/bin/Release/**/*.msix
+            src/bin/Release/**/*.appx
+          if-no-files-found: ignore
+
       - name: Submit to Microsoft Store
         if: ${{ inputs.publish_to_store }}
         shell: pwsh

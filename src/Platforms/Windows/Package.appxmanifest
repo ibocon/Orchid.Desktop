@@ -7,8 +7,8 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="BotanicSoft.OrchidDesktop"
-    Publisher="CN=BotanicSoft"
+    Name="BotanicSoft.UniversalClipboardBridge"
+    Publisher="CN=97E323EE-349D-4541-B8DF-CEDEFF6EE455"
     Version="0.1.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="6a8f10d2-3b4e-4d5a-9c1b-2e3f4a5b6c7d" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
