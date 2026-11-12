@@ -111,7 +111,7 @@ jobs:
             }
           }
           if ([string]::IsNullOrWhiteSpace($SubId) -and $null -eq $AppRes.lastPublishedApplicationSubmission) {
-            $Created = Invoke-RestMethod -Method Post -Uri "$AppUri/submissions" -Headers $Headers -ContentType 'application/json' -Body '{}'
+            $Created = Invoke-RestMethod -Method Post -Uri "$AppUri/submissions" -Headers $Headers -ContentType 'application/json' -Body ''
             $SubId = $Created.id
           }
           if (-not [string]::IsNullOrWhiteSpace($SubId)) {
