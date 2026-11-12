@@ -12,7 +12,7 @@ public sealed class DesktopGardenRazorDiRegistrationTest
     public void GivenDesktopServiceCollection_WhenRegisteringGardenRazor_ThenServicesAreResolvable()
     {
         // Given
-        var services = new ServiceCollection();
+        ServiceCollection services = new ServiceCollection();
         services.AddLogging();
         services.AddLocalization();
         services.AddMudServices();

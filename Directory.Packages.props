@@ -8,9 +8,9 @@
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.5" />
     <PackageVersion Include="FluentAssertions" Version="7.2.0" />
     <PackageVersion Include="Flurl" Version="4.0.0" />
-    <PackageVersion Include="Garden.Aspire" Version="9.5.0" />
-    <PackageVersion Include="Garden.Razor" Version="9.4.5" />
-    <PackageVersion Include="Garden.Share" Version="9.4.5" />
+    <PackageVersion Include="Garden.Aspire" Version="10.0.0" />
+    <PackageVersion Include="Garden.Razor" Version="10.0.0" />
+    <PackageVersion Include="Garden.Share" Version="10.0.0" />
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" />
