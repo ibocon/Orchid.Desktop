@@ -14,7 +14,7 @@
   <mp:PhoneIdentity PhoneProductId="6a8f10d2-3b4e-4d5a-9c1b-2e3f4a5b6c7d" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
 
   <Properties>
-    <DisplayName>Orchid Clipboard</DisplayName>
+    <DisplayName>Universal Clipboard Bridge</DisplayName>
     <PublisherDisplayName>BotanicSoft</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -31,8 +31,8 @@
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Orchid Clipboard"
-        Description="Orchid Universal E2EE Clipboard"
+        DisplayName="Universal Clipboard Bridge"
+        Description="Universal Clipboard Bridge - Cross-Platform E2EE Clipboard Sync"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
