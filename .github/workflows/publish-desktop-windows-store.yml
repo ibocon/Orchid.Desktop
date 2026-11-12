@@ -61,8 +61,14 @@ jobs:
             -c Release `
             -r win-x64 `
             -p:WindowsPackageType=MSIX `
+            -p:GenerateAppxPackageOnBuild=true `
+            -p:AppxPackageSigningEnabled=false `
             -p:OrchidRelayUrl=$RelayUrl `
             -p:EnforceCodeStyleInBuild=false
+
+      - name: Setup Microsoft Store CLI
+        if: ${{ inputs.publish_to_store }}
+        uses: microsoft/setup-msstore-cli@v1
 
       - name: Submit to Microsoft Store
         if: ${{ inputs.publish_to_store }}
