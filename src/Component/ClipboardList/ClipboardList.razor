@@ -1,48 +1,44 @@
 @namespace Orchid.Desktop.Component
 
-<MudPaper Elevation="0" Class="pa-2 d-flex flex-column gap-3" Style="background: transparent;">
-    <MudTextField @bind-Value="SearchQuery"
-                  Placeholder="클립보드 검색..."
-                  Adornment="Adornment.Start"
-                  AdornmentIcon="@Icons.Material.Filled.Search"
-                  Immediate="true"
-                  Variant="Variant.Outlined"
-                  Margin="Margin.Dense" />
+<div style="display: flex; flex-direction: column; gap: 12px;">
+    <GardenTextField Value="@SearchQuery"
+                     ValueChanged="OnSearchQueryChanged"
+                     Label="클립보드 검색"
+                     Placeholder="클립보드 검색..." />
 
     @if (Items == null || Items.Count == 0)
     {
-        <MudPaper Class="pa-8 d-flex justify-center align-center" Elevation="1">
-            <MudText Typo="Typo.body2" Color="Color.Secondary">클립보드 기록이 없습니다.</MudText>
-        </MudPaper>
+        <GardenCard Type="GardenCardType.Outlined" Style="padding: 32px; text-align: center;">
+            <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
+                클립보드 기록이 없습니다.
+            </GardenTypography>
+        </GardenCard>
     }
     else
     {
-        <MudList T="ClipboardItem" Dense="true" ReadOnly="true">
+        <GardenList>
             @foreach (ClipboardItem item in FilteredItems)
             {
-                <MudCard Elevation="2" Class="mb-2" Outlined="@item.IsPinned">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudChip T="string" Color="Color.Primary" Size="MudSize.Small" Variant="Variant.Filled">
-                                @item.ContentType.ToString()
-                            </MudChip>
-                        </CardHeaderContent>
-                        <CardHeaderActions>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @item.CreatedAtUtc.ToLocalTime().ToString("HH:mm:ss")
-                            </MudText>
-                        </CardHeaderActions>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2">
+                <GardenListItem>
+                    <Leading>
+                        <GardenChipAssist Label="@item.ContentType.ToString()"
+                                          Variant="GardenChipAssistVariant.Elevated" />
+                    </Leading>
+                    <Headline>
+                        <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
                             E2EE 암호화됨 (@item.CipherText.Length bytes)
-                        </MudText>
-                    </MudCardContent>
-                </MudCard>
+                        </GardenTypography>
+                    </Headline>
+                    <Supporting>
+                        <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Small">
+                            @item.CreatedAtUtc.ToLocalTime().ToString("HH:mm:ss")
+                        </GardenTypography>
+                    </Supporting>
+                </GardenListItem>
             }
-        </MudList>
+        </GardenList>
     }
-</MudPaper>
+</div>
 
 @code {
     /// <summary>
@@ -57,4 +53,9 @@
         string.IsNullOrWhiteSpace(SearchQuery)
             ? Items
             : Items.Where(i => i.ContentType.ToString().Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+    private void OnSearchQueryChanged(string? next)
+    {
+        SearchQuery = next ?? string.Empty;
+    }
 }

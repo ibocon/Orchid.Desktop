@@ -3,15 +3,27 @@
 <OrchidDesktopDesignSystemProvider @ref="_provider" />
 <MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="true" />
 <MudDialogProvider />
-<MudSnackbarProvider />
+<GardenSnackbarProvider />
 <MudPopoverProvider />
 
-<MudLayout>
-    <MudMainContent Class="pa-4">
+<div class="orchid-desktop-shell">
+    <GardenTopAppBar Height="14" PaddingHorizontal="3" PaddingVertical="1">
+        <LeadingContent>
+            <MudIcon Icon="@Icons.Material.Filled.ContentPasteGo" Style="margin-right: var(--gdn-sys-spacing-2);" />
+            <GardenTypography HtmlTag="h1" Typo="TypographyStyle.Title" Size="TypographySize.Medium">
+                Universal Clipboard Bridge
+            </GardenTypography>
+        </LeadingContent>
+        <TrailingContent>
+            <GardenChipAssist Label="AES-256-GCM" Variant="GardenChipAssistVariant.Outlined" />
+        </TrailingContent>
+    </GardenTopAppBar>
+
+    <main style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
         <PairingPanel />
         <ClipboardList />
-    </MudMainContent>
-</MudLayout>
+    </main>
+</div>
 
 @code {
     private OrchidDesktopDesignSystemProvider? _provider;
