@@ -29,6 +29,7 @@ public static class MauiProgram
         builder.Services.AddMudServices();
         builder.Services.AddGardenRazor();
         builder.Services.AddDesignSystem();
+        builder.ConfigureLocalization();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

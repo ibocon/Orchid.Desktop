@@ -1,32 +1,33 @@
 @namespace Orchid.Desktop.Component
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
+@inject IStringLocalizer<LoginPanelResource> Localizer
 
 <GardenCard Type="GardenCardType.Elevated"
             Style="max-width: 440px; margin: 32px auto; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
     <MudIcon Icon="@Icons.Material.Filled.LockPerson" Size="MudSize.Large" />
     <GardenTypography HtmlTag="h2" Typo="TypographyStyle.Headline" Size="TypographySize.Small">
-        Universal Clipboard Bridge 로그인
+        @Localizer[nameof(LoginPanelResource.Title)]
     </GardenTypography>
     <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-        계정으로 로그인하여 PC와 모바일 간 Zero-Knowledge E2EE 클립보드 동기화를 시작하세요.
+        @Localizer[nameof(LoginPanelResource.Description)]
     </GardenTypography>
 
     <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center; margin-top: 8px;">
         <GoogleLoginButton Width="300px"
                            Height="48px"
                            BorderRadius="12px"
-                           Text="Google 계정으로 계속하기"
+                           Text="@Localizer[nameof(LoginPanelResource.GoogleText)]"
                            OnClick="@(() => SignInAsync("google"))" />
         <KakaoLoginButton Width="300px"
                           Height="48px"
                           BorderRadius="12px"
-                          Text="카카오 계정으로 계속하기"
+                          Text="@Localizer[nameof(LoginPanelResource.KakaoText)]"
                           OnClick="@(() => SignInAsync("kakao"))" />
         <MicrosoftLoginButton Width="300px"
                               Height="48px"
                               BorderRadius="12px"
-                              Text="Microsoft 계정으로 계속하기"
+                              Text="@Localizer[nameof(LoginPanelResource.MicrosoftText)]"
                               OnClick="@(() => SignInAsync("microsoft"))" />
     </div>
 </GardenCard>

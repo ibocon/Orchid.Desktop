@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Update="Service\Localization\ResourceShared.ko-KR.resx">
+      <LogicalName>Orchid.Desktop.Component.ResourceShared.ko-KR.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Service\Localization\ResourceShared.resx">
+      <LogicalName>Orchid.Desktop.Component.ResourceShared.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

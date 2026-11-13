@@ -1,6 +1,7 @@
 @namespace Orchid.Desktop.Component
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
+@inject IStringLocalizer<DesktopAppResource> Localizer
 
 <OrchidDesktopDesignSystemProvider @ref="_provider" />
 <MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="true" />
@@ -19,7 +20,7 @@
                               Typo="TypographyStyle.Title"
                               Size="TypographySize.Large"
                               Style="margin-right: var(--gdn-sys-spacing-4); font-weight: 600; white-space: nowrap;">
-                Universal Clipboard Bridge
+                @Localizer[nameof(DesktopAppResource.AppName)]
             </GardenTypography>
         </LeadingContent>
         <TrailingContent>
@@ -30,7 +31,7 @@
                 {
                     <GardenAccountMenu DisplayName="@AuthService.CurrentUserName"
                                        Email="@AuthService.CurrentUserEmail"
-                                       SignOutLabel="로그아웃"
+                                       SignOutLabel="@Localizer[nameof(DesktopAppResource.SignOutLabel)]"
                                        OnSignOutRequested="SignOutAsync" />
                 }
             </div>

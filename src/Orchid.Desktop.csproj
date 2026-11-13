@@ -50,9 +50,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+    <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Microsoft.Maui.Controls" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Garden.Razor" />
     <PackageReference Include="Garden.Share" />
   </ItemGroup>
+
+  <Import Project="Orchid.Desktop.Resources.props" />
 </Project>

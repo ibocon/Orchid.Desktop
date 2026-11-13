@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Update="Component\DesktopApp\DesktopAppResource.ko-KR.resx">
+      <LogicalName>Orchid.Desktop.Component.DesktopAppResource.ko-KR.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Component\DesktopApp\DesktopAppResource.resx">
+      <LogicalName>Orchid.Desktop.Component.DesktopAppResource.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

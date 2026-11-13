@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    Why: CustomToolNamespace requires LogicalName change
+    https://learn.microsoft.com/en-us/dotnet/core/extensions/work-with-resx-files-programmatically#manifest-file-names
+    https://stackoverflow.com/a/47071481
+  -->
+  <Import Project="Component\ClipboardList\ClipboardList.props" />
+  <Import Project="Component\DesktopApp\DesktopApp.props" />
+  <Import Project="Component\LoginPanel\LoginPanel.props" />
+  <Import Project="Component\PairingPanel\PairingPanel.props" />
+
+  <Import Project="Service\Localization\ResourceShared.props" />
+</Project>

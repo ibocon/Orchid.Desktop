@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Update="Component\LoginPanel\LoginPanelResource.ko-KR.resx">
+      <LogicalName>Orchid.Desktop.Component.LoginPanelResource.ko-KR.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Component\LoginPanel\LoginPanelResource.resx">
+      <LogicalName>Orchid.Desktop.Component.LoginPanelResource.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

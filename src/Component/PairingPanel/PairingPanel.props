@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Update="Component\PairingPanel\PairingPanelResource.ko-KR.resx">
+      <LogicalName>Orchid.Desktop.Component.PairingPanelResource.ko-KR.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Component\PairingPanel\PairingPanelResource.resx">
+      <LogicalName>Orchid.Desktop.Component.PairingPanelResource.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

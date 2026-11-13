@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <EmbeddedResource Update="Component\ClipboardList\ClipboardListResource.ko-KR.resx">
+      <LogicalName>Orchid.Desktop.Component.ClipboardListResource.ko-KR.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Component\ClipboardList\ClipboardListResource.resx">
+      <LogicalName>Orchid.Desktop.Component.ClipboardListResource.resources</LogicalName>
+      <CustomToolNamespace>Orchid.Desktop.Component</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

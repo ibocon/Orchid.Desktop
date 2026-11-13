@@ -2,25 +2,26 @@
 @using Orchid.Core.Sync
 @using Orchid.Core.Sync.Relay
 @inject ClipboardSyncCoordinator Coordinator
+@inject IStringLocalizer<PairingPanelResource> Localizer
 
 <GardenCard Type="GardenCardType.Elevated" Style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
     <GardenTypography HtmlTag="h2" Typo="TypographyStyle.Title" Size="TypographySize.Medium">
-        디바이스 페어링
+        @Localizer[nameof(PairingPanelResource.Title)]
     </GardenTypography>
     @if (_payload is null)
     {
         <div>
             <GardenButton Variant="GardenButtonVariant.Filled" Size="GardenButtonSize.Small" OnClick="StartAsync">
-                페어링 시작
+                @Localizer[nameof(PairingPanelResource.StartPairing)]
             </GardenButton>
         </div>
     }
     else
     {
         <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-            모바일에서 아래 키를 스캔하거나 입력하세요.
+            @Localizer[nameof(PairingPanelResource.ScanOrEnterKeyGuide)]
         </GardenTypography>
-        <GardenTextField Value="@_payload" ReadOnly="true" Label="페어링 키" />
+        <GardenTextField Value="@_payload" ReadOnly="true" Label="@Localizer[nameof(PairingPanelResource.PairingKeyLabel)]" />
     }
 </GardenCard>
 

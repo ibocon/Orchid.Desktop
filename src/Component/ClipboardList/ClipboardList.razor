@@ -1,16 +1,17 @@
 @namespace Orchid.Desktop.Component
+@inject IStringLocalizer<ClipboardListResource> Localizer
 
 <div style="display: flex; flex-direction: column; gap: 12px;">
     <GardenTextField Value="@SearchQuery"
                      ValueChanged="OnSearchQueryChanged"
-                     Label="클립보드 검색"
-                     Placeholder="클립보드 검색..." />
+                     Label="@Localizer[nameof(ClipboardListResource.SearchLabel)]"
+                     Placeholder="@Localizer[nameof(ClipboardListResource.SearchPlaceholder)]" />
 
     @if (Items == null || Items.Count == 0)
     {
         <GardenCard Type="GardenCardType.Outlined" Style="padding: 32px; text-align: center;">
             <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-                클립보드 기록이 없습니다.
+                @Localizer[nameof(ClipboardListResource.EmptyMessage)]
             </GardenTypography>
         </GardenCard>
     }
@@ -26,7 +27,7 @@
                     </Leading>
                     <Headline>
                         <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-                            E2EE 암호화됨 (@item.CipherText.Length bytes)
+                            @Localizer[nameof(ClipboardListResource.EncryptedItemFormat), item.CipherText.Length]
                         </GardenTypography>
                     </Headline>
                     <Supporting>

@@ -1,3 +1,8 @@
+using System.Globalization;
+using Microsoft.Extensions.Localization;
+using Orchid.Desktop.Component;
+using Orchid.Desktop.Service;
+
 namespace Orchid.Desktop;
 
 /// <summary>
@@ -5,11 +10,17 @@ namespace Orchid.Desktop;
 /// </summary>
 public partial class App : Application
 {
+    private readonly IStringLocalizer<ResourceShared> _localizer;
+
     /// <summary>
     /// <see cref="App"/> 클래스의 새 인스턴스를 초기화합니다.
+    /// OS 설치 언어에 맞춰 스레드 컬처를 먼저 적용합니다.
     /// </summary>
-    public App()
+    /// <param name="localizer">공통 리소스 지역화 접근자.</param>
+    public App(IStringLocalizer<ResourceShared> localizer)
     {
+        LanguageCultureResolver.Apply(Language.System, CultureInfo.InstalledUICulture);
+        _localizer = localizer;
         InitializeComponent();
     }
 
@@ -18,7 +29,7 @@ public partial class App : Application
     {
         return new Window(new MainPage())
         {
-            Title = "Orchid - Universal E2EE Clipboard"
+            Title = _localizer[nameof(ResourceShared.WindowTitle)]
         };
     }
 }
