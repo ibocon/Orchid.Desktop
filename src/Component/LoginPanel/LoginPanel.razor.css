@@ -1,0 +1,64 @@
+.root {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--root-gap, var(--gdn-sys-spacing-8, 32px));
+    padding:
+        var(--gdn-sys-spacing-10, 40px)
+        var(--gdn-sys-spacing-4, 16px)
+        var(--gdn-sys-spacing-12, 48px);
+}
+
+.login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gdn-sys-spacing-3, 12px);
+}
+
+.login-logo,
+::deep .login-logo {
+    width: clamp(144px, 40vw, 192px);
+    max-width: 100%;
+    max-height: min(32vh, 192px);
+    object-fit: contain;
+    flex: 0 1 auto;
+}
+
+.login-wordmark {
+    color: var(--gdn-sys-color-on-surface, #1d1b20);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+}
+
+.login-cta {
+    width: 100%;
+    max-width: 360px;
+    min-height: var(--login-cta-min-height, 144px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--root-gap, var(--gdn-sys-spacing-8, 32px));
+}
+
+::deep .login-button-host {
+    margin-block: 0;
+}
+
+.login-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gdn-sys-spacing-3, 12px);
+}
+
+.login-progress__label {
+    color: var(--gdn-sys-color-on-surface-variant, #49454f);
+    font-size: 16px;
+    line-height: 24px;
+}

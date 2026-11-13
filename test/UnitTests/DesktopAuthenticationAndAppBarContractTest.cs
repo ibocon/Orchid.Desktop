@@ -54,6 +54,89 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
     }
 
     [Fact]
+    public void LoginPanelAssetsShouldFollowPeonyMobileBrandLayoutContract()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string logoPath = Path.Combine(repoRoot, "src/wwwroot/logo-login.svg");
+        string loginPanelPath = Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor");
+        string loginPanelCssPath = Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor.css");
+
+        // When & Then
+        // ✅ logo-login.svg 브랜드 심볼이 존재하고 유효한 SVG 마크업을 포함한다
+        File.Exists(logoPath).Should().BeTrue(because: "로그인 브랜드 로고 SVG가 존재해야 한다.");
+        File.ReadAllText(logoPath).Should().Contain("<svg");
+
+        // ✅ LoginPanel.razor는 Peony.Mobile과 동일한 브랜드 레이아웃 구조를 따른다
+        string loginPanel = File.ReadAllText(loginPanelPath);
+        loginPanel.Should().Contain("class=\"root\"");
+        loginPanel.Should().Contain("class=\"login-brand\"");
+        loginPanel.Should().Contain("logo-login.svg");
+        loginPanel.Should().Contain("class=\"login-wordmark\"");
+        loginPanel.Should().Contain("모두클립");
+        loginPanel.Should().Contain("class=\"login-cta\"");
+        loginPanel.Should().Contain("<GoogleLoginButton");
+        loginPanel.Should().Contain("<KakaoLoginButton");
+        loginPanel.Should().Contain("<MicrosoftLoginButton");
+        loginPanel.Should().Contain("class=\"login-progress\"");
+        loginPanel.Should().Contain("IStringLocalizer<LoginPanelResource>");
+
+        // ✅ LoginPanel.razor.css가 존재하고 Garden 디자인 토큰을 사용한다
+        File.Exists(loginPanelCssPath).Should().BeTrue(because: "LoginPanel 스코프드 CSS가 존재해야 한다.");
+        string loginPanelCss = File.ReadAllText(loginPanelCssPath);
+        loginPanelCss.Should().Contain("--gdn-sys-color-on-surface");
+        loginPanelCss.Should().Contain("--gdn-sys-color-on-surface-variant");
+        loginPanelCss.Should().Contain("--gdn-sys-spacing-");
+    }
+
+    [Fact]
+    public void DesignSystemProviderShouldDefaultToLightSchemeAndExposeBothPaletteMappings()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string provider = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "src/Component/OrchidDesktopDesignSystemProvider/OrchidDesktopDesignSystemProvider.razor.cs"));
+
+        // When & Then
+        // ✅ 초기 기본 테마가 SchemeContext.Light이고 PaletteLight/PaletteDark를 모두 구성한다
+        provider.Should().Contain("ChangeContext(SchemeContext.Light)");
+        provider.Should().Contain("PaletteLight");
+        provider.Should().Contain("PaletteDark");
+
+        // ✅ 테마 전환 API(IsDarkMode, CurrentSchemeContext, ToggleTheme, SetTheme)를 노출한다
+        provider.Should().Contain("IsDarkMode");
+        provider.Should().Contain("CurrentSchemeContext");
+        provider.Should().Contain("ToggleTheme()");
+        provider.Should().Contain("SetTheme(SchemeContext");
+    }
+
+    [Fact]
+    public void DesktopAppAndNativeAssetsShouldBindProviderThemeWithoutDarkHardcoding()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string desktopApp = File.ReadAllText(Path.Combine(repoRoot, "src/Component/DesktopApp/DesktopApp.razor"));
+        string mainPageXaml = File.ReadAllText(Path.Combine(repoRoot, "src/MainPage.xaml"));
+        string appCss = File.ReadAllText(Path.Combine(repoRoot, "src/wwwroot/css/app.css"));
+
+        // When & Then
+        // ✅ 루트 MudThemeProvider가 프로바이더의 IsDarkMode에 바인딩되고 고정 다크 리터럴이 없다
+        desktopApp.Should().NotContain("IsDarkMode=\"true\"");
+        desktopApp.Should().Contain("IsDarkMode=\"@(_provider?.IsDarkMode ?? false)\"");
+        desktopApp.Should().Contain("<GardenIconButton");
+        desktopApp.Should().Contain("Icons.Material.Filled.LightMode");
+        desktopApp.Should().Contain("Icons.Material.Filled.DarkMode");
+
+        // ✅ 네이티브 배경과 전역 CSS가 다크 HEX 하드코딩 없이 디자인 토큰을 사용한다
+        mainPageXaml.Should().NotContain("#121212");
+        mainPageXaml.Should().NotContain("#1e1e1e");
+        appCss.Should().NotContain("#121212");
+        appCss.Should().NotContain("#1e1e1e");
+        appCss.Should().Contain("var(--gdn-sys-color-surface)");
+    }
+
+    [Fact]
     public void DirectoryPackagesPropsShouldPinPatchedSignalRAndSqlitePclRawVersions()
     {
         // Given

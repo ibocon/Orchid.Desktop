@@ -11,7 +11,7 @@ namespace Orchid.UnitTests.Desktop;
 public sealed class DesktopThemeSwitchingContractTest
 {
     [Fact]
-    public void DesignSystemSchemeSetShouldSupportSwitchingBetweenLightAndDarkContexts()
+    public void DesignSystemSchemeSetShouldSwitchBetweenLightAndDarkContexts()
     {
         // Given
         ServiceCollection services = new();
@@ -19,9 +19,10 @@ public sealed class DesktopThemeSwitchingContractTest
         services.AddDesignSystem();
         using ServiceProvider provider = services.BuildServiceProvider();
         DesignSystem designSystem = provider.GetRequiredService<DesignSystem>();
+        List<SchemeContext> raisedContexts = [];
+        designSystem.Color.SchemeSet.ContextChanged += (_, eventArgs) => raisedContexts.Add(eventArgs.SchemeContext);
 
         // When
-        designSystem.Color.SchemeSet.ChangeContext(SchemeContext.Light);
         SchemeContext initial = designSystem.Color.SchemeSet.Context;
         string lightSurface = designSystem.Color.SchemeSet.Current.Surface.ToHex();
 
@@ -29,10 +30,19 @@ public sealed class DesktopThemeSwitchingContractTest
         SchemeContext toggled = designSystem.Color.SchemeSet.Context;
         string darkSurface = designSystem.Color.SchemeSet.Current.Surface.ToHex();
 
+        designSystem.Color.SchemeSet.ChangeContext(SchemeContext.Light);
+        SchemeContext restored = designSystem.Color.SchemeSet.Context;
+        string restoredSurface = designSystem.Color.SchemeSet.Current.Surface.ToHex();
+
         // Then
+        // ✅ 초기 문맥이 Light이고 Dark 전환 시 Surface 색상이 달라지며 ContextChanged가 발생한다
         initial.Should().Be(SchemeContext.Light);
         toggled.Should().Be(SchemeContext.Dark);
         lightSurface.Should().NotBe(darkSurface);
+        // ✅ Light 복귀 시 문맥과 Surface 색상이 원복된다
+        restored.Should().Be(SchemeContext.Light);
+        restoredSurface.Should().Be(lightSurface);
+        raisedContexts.Should().Equal(SchemeContext.Dark, SchemeContext.Light);
     }
 
     [Fact]

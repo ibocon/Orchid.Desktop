@@ -44,10 +44,9 @@ public partial class OrchidDesktopDesignSystemProvider : DesignSystemProvider<De
     public void SetTheme(SchemeContext context)
     {
         DsgnSys.Color.SchemeSet.ChangeContext(context);
-        if (Microsoft.Maui.Controls.Application.Current is not null)
+        if (Microsoft.Maui.Controls.Application.Current is { } app)
         {
-            Microsoft.Maui.Controls.Application.Current.UserAppTheme =
-                context == SchemeContext.Dark ? AppTheme.Dark : AppTheme.Light;
+            app.UserAppTheme = context == SchemeContext.Dark ? AppTheme.Dark : AppTheme.Light;
         }
     }
 

@@ -2,35 +2,57 @@
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
 @inject IStringLocalizer<LoginPanelResource> Localizer
+@inject DesignSystem DesignSystem
 
-<GardenCard Type="GardenCardType.Elevated"
-            Style="max-width: 440px; margin: 32px auto; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
-    <MudIcon Icon="@Icons.Material.Filled.LockPerson" Size="MudSize.Large" />
-    <GardenTypography HtmlTag="h2" Typo="TypographyStyle.Headline" Size="TypographySize.Small">
-        @Localizer[nameof(LoginPanelResource.Title)]
-    </GardenTypography>
-    <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-        @Localizer[nameof(LoginPanelResource.Description)]
-    </GardenTypography>
+@{
+    string loginButtonWidth = "80%";
+    string loginButtonHeight = DesignSystem.Layout.GetPixelString(14);
+    string loginButtonBorderRadius = DesignSystem.Layout.GetPixelString(4);
+    string ctaMinHeight = DesignSystem.Layout.GetPixelString(36);
 
-    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center; margin-top: 8px;">
-        <GoogleLoginButton Width="300px"
-                           Height="48px"
-                           BorderRadius="12px"
-                           Text="@Localizer[nameof(LoginPanelResource.GoogleText)]"
-                           OnClick="@(() => SignInAsync("google"))" />
-        <KakaoLoginButton Width="300px"
-                          Height="48px"
-                          BorderRadius="12px"
-                          Text="@Localizer[nameof(LoginPanelResource.KakaoText)]"
-                          OnClick="@(() => SignInAsync("kakao"))" />
-        <MicrosoftLoginButton Width="300px"
-                              Height="48px"
-                              BorderRadius="12px"
-                              Text="@Localizer[nameof(LoginPanelResource.MicrosoftText)]"
-                              OnClick="@(() => SignInAsync("microsoft"))" />
+    string rootStyle = new StyleBuilder()
+        .AddStyle("--root-gap", DesignSystem.Layout.GetPixelString(8))
+        .AddStyle("--login-cta-min-height", ctaMinHeight)
+        .Build();
+}
+
+<div class="root" style="@rootStyle">
+    <div class="login-brand">
+        <img class="login-logo"
+             src="logo-login.svg"
+             alt="Universal Clipboard Bridge (모두클립)" />
+        <span class="login-wordmark">모두클립</span>
     </div>
-</GardenCard>
+    <div class="login-cta">
+        @if (_isSigningIn)
+        {
+            <div class="login-progress"
+                 role="status"
+                 aria-live="polite">
+                <GardenLoadingIndicator />
+                <span class="login-progress__label">로그인 중...</span>
+            </div>
+        }
+        else
+        {
+            <GoogleLoginButton Width="@loginButtonWidth"
+                               Height="@loginButtonHeight"
+                               BorderRadius="@loginButtonBorderRadius"
+                               Text="@Localizer[nameof(LoginPanelResource.GoogleText)]"
+                               OnClick="@(() => SignInAsync("google"))" />
+            <KakaoLoginButton Width="@loginButtonWidth"
+                              Height="@loginButtonHeight"
+                              BorderRadius="@loginButtonBorderRadius"
+                              Text="@Localizer[nameof(LoginPanelResource.KakaoText)]"
+                              OnClick="@(() => SignInAsync("kakao"))" />
+            <MicrosoftLoginButton Width="@loginButtonWidth"
+                                  Height="@loginButtonHeight"
+                                  BorderRadius="@loginButtonBorderRadius"
+                                  Text="@Localizer[nameof(LoginPanelResource.MicrosoftText)]"
+                                  OnClick="@(() => SignInAsync("microsoft"))" />
+        }
+    </div>
+</div>
 
 @code {
     /// <summary>
@@ -39,9 +61,25 @@
     [Parameter]
     public EventCallback OnAuthenticated { get; set; }
 
+    private bool _isSigningIn;
+
     private async Task SignInAsync(string provider)
     {
-        await AuthService.SignInInteractiveAsync(provider);
-        await OnAuthenticated.InvokeAsync();
+        if (_isSigningIn)
+        {
+            return;
+        }
+
+        _isSigningIn = true;
+        StateHasChanged();
+        try
+        {
+            await AuthService.SignInInteractiveAsync(provider);
+            await OnAuthenticated.InvokeAsync();
+        }
+        finally
+        {
+            _isSigningIn = false;
+        }
     }
 }
