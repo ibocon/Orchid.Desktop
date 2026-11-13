@@ -86,6 +86,13 @@ $BuildArgs = @(
     '-p:EnforceCodeStyleInBuild=false'
 )
 
+$RunningProcesses = @(Get-Process -Name 'Orchid.Desktop' -ErrorAction SilentlyContinue)
+if ($RunningProcesses.Count -gt 0 -and $DotnetCommand -eq 'dotnet') {
+    Write-Output "[orchid-desktop-staging] stopping $($RunningProcesses.Count) running Orchid.Desktop instance(s) before build..."
+    $RunningProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 300
+}
+
 Write-Output "[orchid-desktop-staging] building src/Orchid.Desktop.csproj ($Configuration, OrchidRelayUrl=$NormalizedRelayUrl)..."
 & $DotnetCommand @BuildArgs
 if ($LASTEXITCODE -ne 0) {
