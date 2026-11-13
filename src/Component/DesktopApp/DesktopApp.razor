@@ -2,9 +2,11 @@
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
 @inject IStringLocalizer<DesktopAppResource> Localizer
+@inject DesignSystem DesignSystem
+@implements IDisposable
 
 <OrchidDesktopDesignSystemProvider @ref="_provider" />
-<MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="true" />
+<MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="@(_provider?.IsDarkMode ?? false)" />
 <MudDialogProvider />
 <GardenSnackbarProvider />
 <MudPopoverProvider />
@@ -27,6 +29,12 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <GardenChipAssist Label="AES-256-GCM"
                                   Variant="GardenChipAssistVariant.Outlined" />
+                <GardenIconButton Icon="@((_provider?.IsDarkMode ?? false) ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                                  Variant="GardenIconButtonVariant.Standard"
+                                  Size="GardenIconButtonSize.Small"
+                                  aria-label="테마 전환"
+                                  title="Light/Dark 테마 전환"
+                                  OnClick="ToggleTheme" />
                 @if (AuthService.IsAuthenticated)
                 {
                     <GardenAccountMenu DisplayName="@AuthService.CurrentUserName"
@@ -54,8 +62,29 @@
 @code {
     private OrchidDesktopDesignSystemProvider? _provider;
 
+    protected override void OnInitialized()
+    {
+        DesignSystem.Color.SchemeSet.ContextChanged += OnSchemeContextChanged;
+    }
+
+    private void ToggleTheme(MouseEventArgs args)
+    {
+        _provider?.ToggleTheme();
+        StateHasChanged();
+    }
+
+    private void OnSchemeContextChanged(object? sender, SchemeContextChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     private async Task SignOutAsync(MouseEventArgs args)
     {
         await AuthService.SignOutAsync();
+    }
+
+    public void Dispose()
+    {
+        DesignSystem.Color.SchemeSet.ContextChanged -= OnSchemeContextChanged;
     }
 }

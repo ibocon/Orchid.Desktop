@@ -22,14 +22,22 @@ public partial class App : Application
         LanguageCultureResolver.Apply(Language.System, CultureInfo.InstalledUICulture);
         _localizer = localizer;
         InitializeComponent();
+        UserAppTheme = AppTheme.Light;
     }
 
     /// <inheritdoc />
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        double windowWidth = MainWindowLayout.Width;
+        double windowHeight = MainWindowLayout.Height;
+
         return new Window(new MainPage())
         {
-            Title = _localizer[nameof(ResourceShared.WindowTitle)]
+            Title = _localizer[nameof(ResourceShared.WindowTitle)],
+            Width = windowWidth,
+            Height = windowHeight,
+            MinimumWidth = MainWindowLayout.MinimumWidth,
+            MinimumHeight = MainWindowLayout.MinimumHeight
         };
     }
 }

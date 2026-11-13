@@ -26,6 +26,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\src\MainWindowLayout.cs" Link="MainWindowLayout.cs" />
     <Compile Include="..\..\src\Service\IOrchidDesktopAuthService.cs" Link="Service\IOrchidDesktopAuthService.cs" />
     <Compile Include="..\..\src\Service\OrchidDesktopAuthService.cs" Link="Service\OrchidDesktopAuthService.cs" />
     <Compile Include="..\..\src\Service\Localization\Language.cs" Link="Service\Localization\Language.cs" />
