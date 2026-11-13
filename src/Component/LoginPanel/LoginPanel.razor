@@ -3,6 +3,7 @@
 @inject IOrchidDesktopAuthService AuthService
 @inject IStringLocalizer<LoginPanelResource> Localizer
 @inject DesignSystem DesignSystem
+@implements IDisposable
 
 @{
     string loginButtonWidth = "80%";
@@ -30,7 +31,12 @@
                  role="status"
                  aria-live="polite">
                 <GardenLoadingIndicator />
-                <span class="login-progress__label">로그인 중...</span>
+                <span class="login-progress__label">@Localizer[nameof(LoginPanelResource.SigningIn)]</span>
+                <GardenButton Variant="GardenButtonVariant.Outlined"
+                              Size="GardenButtonSize.Small"
+                              OnClick="CancelSignIn">
+                    @Localizer[nameof(LoginPanelResource.CancelText)]
+                </GardenButton>
             </div>
         }
         else
@@ -62,6 +68,7 @@
     public EventCallback OnAuthenticated { get; set; }
 
     private bool _isSigningIn;
+    private CancellationTokenSource? _signInCts;
 
     private async Task SignInAsync(string provider)
     {
@@ -71,15 +78,43 @@
         }
 
         _isSigningIn = true;
+        _signInCts = new CancellationTokenSource();
         StateHasChanged();
         try
         {
-            await AuthService.SignInInteractiveAsync(provider);
-            await OnAuthenticated.InvokeAsync();
+            await AuthService.SignInInteractiveAsync(provider, _signInCts.Token);
+            if (AuthService.IsAuthenticated)
+            {
+                await OnAuthenticated.InvokeAsync();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 사용자가 로그인을 취소했거나 로그인 대기가 중단된 경우 로그인 화면으로 복귀한다.
         }
         finally
         {
             _isSigningIn = false;
+            await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private void CancelSignIn(MouseEventArgs _)
+    {
+        _signInCts?.Cancel();
+        AuthService.CancelSignIn();
+        _isSigningIn = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// 컴포넌트 해제 시 진행 중인 로그인 대기를 취소하고 리소스를 정리합니다.
+    /// </summary>
+    public void Dispose()
+    {
+        _signInCts?.Cancel();
+        AuthService.CancelSignIn();
+        _signInCts?.Dispose();
+        _signInCts = null;
     }
 }

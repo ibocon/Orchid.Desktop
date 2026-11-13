@@ -35,6 +35,28 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
     }
 
     [Fact]
+    public async Task CancelSignInShouldAbortInteractiveWaitAndLeaveUserUnauthenticated()
+    {
+        // Given
+        // ✅ 브라우저 기동을 no-op 런처로 대체해 단위 테스트에서 실제 브라우저를 띄우지 않는다
+        OrchidDesktopAuthService authService = new(browserLauncher: _ => null);
+        using CancellationTokenSource cts = new();
+
+        // When
+        Task signInTask = authService.SignInInteractiveAsync("google", cts.Token);
+        await Task.Delay(100);
+        authService.CancelSignIn();
+
+        // Then
+        // ✅ 취소 시 3분 타임아웃을 기다리지 않고 깨끗하게 완료되며 미인증 상태를 유지한다
+        Func<Task> awaitSignIn = () => signInTask;
+        await awaitSignIn.Should().CompleteWithinAsync(TimeSpan.FromSeconds(2));
+        signInTask.IsFaulted.Should().BeFalse();
+        signInTask.IsCanceled.Should().BeFalse();
+        authService.IsAuthenticated.Should().BeFalse();
+    }
+
+    [Fact]
     public void IndexHtmlAndDesktopRazorViewsShouldIncludeScopedCssAndGardenLoginComponents()
     {
         // Given
@@ -80,6 +102,12 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         loginPanel.Should().Contain("<MicrosoftLoginButton");
         loginPanel.Should().Contain("class=\"login-progress\"");
         loginPanel.Should().Contain("IStringLocalizer<LoginPanelResource>");
+
+        // ✅ 로그인 대기 중 취소 버튼과 상태 복구 가드가 구성된다
+        loginPanel.Should().Contain("CancelSignIn");
+        loginPanel.Should().Contain("<GardenButton");
+        loginPanel.Should().Contain("AuthService.IsAuthenticated");
+        loginPanel.Should().Contain("InvokeAsync(StateHasChanged)");
 
         // ✅ LoginPanel.razor.css가 존재하고 Garden 디자인 토큰을 사용한다
         File.Exists(loginPanelCssPath).Should().BeTrue(because: "LoginPanel 스코프드 CSS가 존재해야 한다.");

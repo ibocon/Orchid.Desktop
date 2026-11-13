@@ -132,4 +132,10 @@
   <data name="MicrosoftText" xml:space="preserve">
     <value>Microsoft 계정으로 계속하기</value>
   </data>
+  <data name="SigningIn" xml:space="preserve">
+    <value>로그인 중...</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>취소</value>
+  </data>
 </root>

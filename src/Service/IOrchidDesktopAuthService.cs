@@ -47,6 +47,11 @@ public interface IOrchidDesktopAuthService
     Task SignInInteractiveAsync(string provider, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 진행 중인 대화형 로그인 대기를 취소하고 사용자를 미인증 상태로 되돌립니다.
+    /// </summary>
+    void CancelSignIn();
+
+    /// <summary>
     /// 현재 인증 세션을 종료하고 로그아웃합니다.
     /// </summary>
     /// <param name="cancellationToken">취소 토큰</param>

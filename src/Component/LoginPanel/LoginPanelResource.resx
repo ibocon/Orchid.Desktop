@@ -132,4 +132,10 @@
   <data name="MicrosoftText" xml:space="preserve">
     <value>Continue with Microsoft</value>
   </data>
+  <data name="SigningIn" xml:space="preserve">
+    <value>Signing in...</value>
+  </data>
+  <data name="CancelText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

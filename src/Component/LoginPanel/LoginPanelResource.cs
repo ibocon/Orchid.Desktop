@@ -20,6 +20,12 @@ public sealed class LoginPanelResource
     /// <summary>Microsoft 로그인 버튼 문구 리소스 키.</summary>
     public const string MicrosoftText = nameof(MicrosoftText);
 
+    /// <summary>로그인 진행 문구 리소스 키.</summary>
+    public const string SigningIn = nameof(SigningIn);
+
+    /// <summary>로그인 취소 버튼 문구 리소스 키.</summary>
+    public const string CancelText = nameof(CancelText);
+
     private LoginPanelResource()
     {
     }
