@@ -39,6 +39,14 @@ public interface IOrchidDesktopAuthService
     Task SignInWithProviderAsync(string provider, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 시스템 브라우저와 루프백 HttpListener를 사용하여 대화형 Keycloak OIDC PKCE 로그인을 수행합니다.
+    /// </summary>
+    /// <param name="provider">ID 공급자 식별자</param>
+    /// <param name="cancellationToken">취소 토큰</param>
+    /// <returns>비동기 작업</returns>
+    Task SignInInteractiveAsync(string provider, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 현재 인증 세션을 종료하고 로그아웃합니다.
     /// </summary>
     /// <param name="cancellationToken">취소 토큰</param>

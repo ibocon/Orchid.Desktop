@@ -11,6 +11,7 @@ namespace Orchid.Desktop.Platforms.Windows;
 public sealed partial class WindowsClipboardChangeSource : IClipboardChangeSource
 {
     private readonly SubclassProc _proc;
+    private bool _isStarted;
 
     /// <summary>
     /// <see cref="WindowsClipboardChangeSource"/> 클래스의 새 인스턴스를 초기화합니다.
@@ -29,6 +30,11 @@ public sealed partial class WindowsClipboardChangeSource : IClipboardChangeSourc
     /// <inheritdoc />
     public void Start()
     {
+        if (_isStarted)
+        {
+            return;
+        }
+
         Microsoft.UI.Xaml.Window window = Microsoft.Maui.Controls.Application.Current?.Windows[0].Handler?.PlatformView as Microsoft.UI.Xaml.Window
             ?? throw new InvalidOperationException("Main window handle is unavailable.");
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
@@ -42,6 +48,8 @@ public sealed partial class WindowsClipboardChangeSource : IClipboardChangeSourc
         {
             throw new InvalidOperationException($"AddClipboardFormatListener failed. Win32 error: {Marshal.GetLastWin32Error()}");
         }
+
+        _isStarted = true;
     }
 
     [LibraryImport("comctl32.dll", SetLastError = true)]

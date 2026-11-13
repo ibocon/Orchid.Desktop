@@ -53,6 +53,20 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         loginPanel.Should().Contain("<MicrosoftLoginButton");
     }
 
+    [Fact]
+    public void DirectoryPackagesPropsShouldPinPatchedSignalRAndSqlitePclRawVersions()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string props = File.ReadAllText(Path.Combine(repoRoot, "Directory.Packages.props"));
+
+        // When & Then
+        // ✅ NU1903 취약점이 해결된 SignalR 10.0.15 및 SQLitePCLRaw 2.1.14 버전이 고정된다
+        props.Should().Contain("\"Microsoft.AspNetCore.SignalR.Client\" Version=\"10.0.15\"");
+        props.Should().Contain("\"SQLitePCLRaw.bundle_green\" Version=\"2.1.11\"");
+        props.Should().Contain("\"SQLitePCLRaw.lib.e_sqlite3\" Version=\"2.1.14\"");
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? dir = new(AppContext.BaseDirectory);

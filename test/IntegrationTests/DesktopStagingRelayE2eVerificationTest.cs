@@ -44,32 +44,39 @@ public sealed class DesktopStagingRelayE2eVerificationTest
                 new AesGcmCryptoService(),
                 new SqliteClipboardRepository(Path.Combine(tempDir, "receiver.db")));
 
-            await using SignalRClipboardRelayClient senderRelay = new(new RelayOptions(new Uri(StagingHubUrl)));
-            await using SignalRClipboardRelayClient receiverRelay = new(new RelayOptions(new Uri(StagingHubUrl)));
+            SignalRClipboardRelayClient senderRelay = new(new RelayOptions(new Uri(StagingHubUrl)));
+            SignalRClipboardRelayClient receiverRelay = new(new RelayOptions(new Uri(StagingHubUrl)));
 
-            await using ClipboardSyncCoordinator senderCoordinator = new(
+            ClipboardSyncCoordinator senderCoordinator = new(
                 senderEngine,
                 senderClipboard,
                 senderChangeSource,
                 senderRelay);
-            await using ClipboardSyncCoordinator receiverCoordinator = new(
+            ClipboardSyncCoordinator receiverCoordinator = new(
                 receiverEngine,
                 receiverClipboard,
                 receiverChangeSource,
                 receiverRelay);
 
-            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(25));
-            await receiverCoordinator.StartAsync(pairingKey, Guid.NewGuid(), cts.Token);
-            await senderCoordinator.StartAsync(pairingKey, Guid.NewGuid(), cts.Token);
+            try
+            {
+                using CancellationTokenSource cts = new(TimeSpan.FromSeconds(25));
+                await receiverCoordinator.StartAsync(pairingKey, Guid.NewGuid(), cts.Token).ConfigureAwait(true);
+                await senderCoordinator.StartAsync(pairingKey, Guid.NewGuid(), cts.Token).ConfigureAwait(true);
 
-            // When
-            string expectedText = senderClipboard.CurrentText!;
-            await senderChangeSource.RaiseChangedAsync();
-            string actualReceived = await receiverClipboard.WaitForTextAsync(cts.Token);
+                // When
+                string expectedText = senderClipboard.CurrentText!;
+                await senderChangeSource.RaiseChangedAsync().ConfigureAwait(true);
+                string actualReceived = await receiverClipboard.WaitForTextAsync(cts.Token).ConfigureAwait(true);
 
-            // Then
-            // ✅ 로컬 송신 코디네이터가 암호화한 텍스트가 Staging SignalR 허브를 거쳐 수신 코디네이터에서 정확히 복호화된다
-            actualReceived.Should().Be(expectedText);
+                // Then
+                actualReceived.Should().Be(expectedText);
+            }
+            finally
+            {
+                await senderCoordinator.DisposeAsync().ConfigureAwait(true);
+                await receiverCoordinator.DisposeAsync().ConfigureAwait(true);
+            }
         }
         finally
         {

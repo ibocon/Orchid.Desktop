@@ -18,6 +18,9 @@
     <PackageReference Include="Garden.Razor" />
     <PackageReference Include="Garden.Share" />
     <PackageReference Include="Orchid.Core" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

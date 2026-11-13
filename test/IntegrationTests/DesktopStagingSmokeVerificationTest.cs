@@ -18,14 +18,14 @@ public sealed class DesktopStagingSmokeVerificationTest
         // Given
         string repoRoot = FindRepositoryRoot();
         string csprojPath = Path.Combine(repoRoot, "src", "Orchid.Desktop.csproj");
-        string csprojContent = await File.ReadAllTextAsync(csprojPath);
+        string csprojContent = await File.ReadAllTextAsync(csprojPath).ConfigureAwait(true);
 
         // When
         using HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
         using HttpResponseMessage negotiateResponse = await httpClient.PostAsync(
             new Uri("https://stag.botanicsoft.com/orchid/hubs/clipboard/negotiate?negotiateVersion=1"),
-            new StringContent(string.Empty));
-        string negotiateBody = await negotiateResponse.Content.ReadAsStringAsync();
+            new StringContent(string.Empty)).ConfigureAwait(true);
+        string negotiateBody = await negotiateResponse.Content.ReadAsStringAsync().ConfigureAwait(true);
 
         string exePath = FindBuiltDesktopExecutable(repoRoot);
 

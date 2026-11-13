@@ -40,7 +40,7 @@
 
     private async Task SignInAsync(string provider)
     {
-        await AuthService.SignInWithProviderAsync(provider);
+        await AuthService.SignInInteractiveAsync(provider);
         await OnAuthenticated.InvokeAsync();
     }
 }
