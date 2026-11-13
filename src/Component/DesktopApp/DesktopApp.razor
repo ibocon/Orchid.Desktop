@@ -1,4 +1,6 @@
 @namespace Orchid.Desktop.Component
+@using Orchid.Desktop.Service
+@inject IOrchidDesktopAuthService AuthService
 
 <OrchidDesktopDesignSystemProvider @ref="_provider" />
 <MudThemeProvider Theme="_provider?.CurrentMudTheme" IsDarkMode="true" />
@@ -7,24 +9,52 @@
 <MudPopoverProvider />
 
 <div class="orchid-desktop-shell">
-    <GardenTopAppBar Height="14" PaddingHorizontal="3" PaddingVertical="1">
+    <GardenTopAppBar Height="16"
+                     PaddingHorizontal="4"
+                     PaddingVertical="1">
         <LeadingContent>
-            <MudIcon Icon="@Icons.Material.Filled.ContentPasteGo" Style="margin-right: var(--gdn-sys-spacing-2);" />
-            <GardenTypography HtmlTag="h1" Typo="TypographyStyle.Title" Size="TypographySize.Medium">
+            <MudIcon Icon="@Icons.Material.Filled.ContentPasteGo"
+                     Style="margin-right: var(--gdn-sys-spacing-2);" />
+            <GardenTypography HtmlTag="h1"
+                              Typo="TypographyStyle.Title"
+                              Size="TypographySize.Large"
+                              Style="margin-right: var(--gdn-sys-spacing-4); font-weight: 600; white-space: nowrap;">
                 Universal Clipboard Bridge
             </GardenTypography>
         </LeadingContent>
         <TrailingContent>
-            <GardenChipAssist Label="AES-256-GCM" Variant="GardenChipAssistVariant.Outlined" />
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <GardenChipAssist Label="AES-256-GCM"
+                                  Variant="GardenChipAssistVariant.Outlined" />
+                @if (AuthService.IsAuthenticated)
+                {
+                    <GardenAccountMenu DisplayName="@AuthService.CurrentUserName"
+                                       Email="@AuthService.CurrentUserEmail"
+                                       SignOutLabel="로그아웃"
+                                       OnSignOutRequested="SignOutAsync" />
+                }
+            </div>
         </TrailingContent>
     </GardenTopAppBar>
 
     <main style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
-        <PairingPanel />
-        <ClipboardList />
+        @if (!AuthService.IsAuthenticated)
+        {
+            <LoginPanel OnAuthenticated="StateHasChanged" />
+        }
+        else
+        {
+            <PairingPanel />
+            <ClipboardList />
+        }
     </main>
 </div>
 
 @code {
     private OrchidDesktopDesignSystemProvider? _provider;
+
+    private async Task SignOutAsync(MouseEventArgs args)
+    {
+        await AuthService.SignOutAsync();
+    }
 }

@@ -35,6 +35,7 @@ public static class MauiProgram
 #endif
 
         builder.Services.AddSingleton<ISystemClipboard, DesktopClipboardAdapter>();
+        builder.Services.AddSingleton<IOrchidDesktopAuthService, OrchidDesktopAuthService>();
         builder.Services.AddSingleton<IAesGcmCryptoService, AesGcmCryptoService>();
 
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "orchid.db");

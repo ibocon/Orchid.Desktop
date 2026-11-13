@@ -22,4 +22,8 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Service\IOrchidDesktopAuthService.cs" Link="Service\IOrchidDesktopAuthService.cs" />
+    <Compile Include="..\..\src\Service\OrchidDesktopAuthService.cs" Link="Service\OrchidDesktopAuthService.cs" />
+  </ItemGroup>
 </Project>
