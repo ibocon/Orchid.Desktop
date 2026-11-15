@@ -1,6 +1,8 @@
 @namespace Orchid.Desktop.Component
+@using Orchid.Core.Storage
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
+@inject IClipboardRepository ClipboardRepository
 @inject IStringLocalizer<DesktopAppResource> Localizer
 @inject DesignSystem DesignSystem
 @implements IDisposable
@@ -46,25 +48,55 @@
         </TrailingContent>
     </GardenTopAppBar>
 
-    <main style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+    <main class="desktop-dashboard">
         @if (!AuthService.IsAuthenticated)
         {
-            <LoginPanel OnAuthenticated="StateHasChanged" />
+            <LoginPanel OnAuthenticated="OnAuthenticatedAsync" />
         }
         else
         {
             <PairingPanel />
-            <ClipboardList />
+            <ClipboardList Items="@_clipboardItems" />
         }
     </main>
 </div>
 
 @code {
     private OrchidDesktopDesignSystemProvider? _provider;
+    private IReadOnlyList<ClipboardItem> _clipboardItems = [];
 
     protected override void OnInitialized()
     {
         DesignSystem.Color.SchemeSet.ContextChanged += OnSchemeContextChanged;
+        if (ClipboardRepository is ObservableClipboardRepository observableRepository)
+        {
+            observableRepository.Changed += OnClipboardRepositoryChanged;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshClipboardItemsAsync();
+    }
+
+    private async Task OnAuthenticatedAsync()
+    {
+        await RefreshClipboardItemsAsync();
+        StateHasChanged();
+    }
+
+    private async Task RefreshClipboardItemsAsync()
+    {
+        _clipboardItems = await ClipboardRepository.GetRecentAsync();
+    }
+
+    private void OnClipboardRepositoryChanged(object? sender, EventArgs e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await RefreshClipboardItemsAsync();
+            StateHasChanged();
+        });
     }
 
     private void ToggleTheme(MouseEventArgs args)
@@ -86,5 +118,9 @@
     public void Dispose()
     {
         DesignSystem.Color.SchemeSet.ContextChanged -= OnSchemeContextChanged;
+        if (ClipboardRepository is ObservableClipboardRepository observableRepository)
+        {
+            observableRepository.Changed -= OnClipboardRepositoryChanged;
+        }
     }
 }

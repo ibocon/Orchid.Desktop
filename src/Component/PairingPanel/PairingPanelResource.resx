@@ -124,9 +124,24 @@
     <value>Start Pairing</value>
   </data>
   <data name="ScanOrEnterKeyGuide" xml:space="preserve">
-    <value>Scan or enter the pairing key below on your mobile device.</value>
+    <value>Scan the QR code or enter the pairing key below on your mobile device.</value>
   </data>
   <data name="PairingKeyLabel" xml:space="preserve">
     <value>Pairing Key</value>
+  </data>
+  <data name="StatusReadyBadge" xml:space="preserve">
+    <value>Ready to Pair</value>
+  </data>
+  <data name="CopyKeyButton" xml:space="preserve">
+    <value>Copy Key</value>
+  </data>
+  <data name="CopiedKeyButton" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="RegenerateKeyButton" xml:space="preserve">
+    <value>New Key</value>
+  </data>
+  <data name="QrScanCaption" xml:space="preserve">
+    <value>Scan with Mobile App</value>
   </data>
 </root>

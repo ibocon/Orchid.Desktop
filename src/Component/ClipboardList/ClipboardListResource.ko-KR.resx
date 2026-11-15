@@ -129,4 +129,19 @@
   <data name="EncryptedItemFormat" xml:space="preserve">
     <value>E2EE 암호화됨 ({0} bytes)</value>
   </data>
+  <data name="SectionTitle" xml:space="preserve">
+    <value>클립보드 히스토리</value>
+  </data>
+  <data name="EmptyDescription" xml:space="preserve">
+    <value>PC에서 텍스트를 복사(Ctrl+C)하거나 모바일에서 공유하면 AES-256-GCM 종단간 암호화로 이곳에 실시간 표시됩니다.</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>전체</value>
+  </data>
+  <data name="FilterText" xml:space="preserve">
+    <value>텍스트</value>
+  </data>
+  <data name="FilterImage" xml:space="preserve">
+    <value>이미지</value>
+  </data>
 </root>

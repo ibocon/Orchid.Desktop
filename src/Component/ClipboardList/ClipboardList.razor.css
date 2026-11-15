@@ -1,0 +1,47 @@
+.clipboard-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gdn-sys-spacing-4, 16px);
+}
+
+.clipboard-workspace__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gdn-sys-spacing-3, 12px);
+}
+
+.clipboard-workspace__title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--gdn-sys-spacing-3, 12px);
+}
+
+.clipboard-workspace__filters {
+    display: flex;
+    align-items: center;
+    gap: var(--gdn-sys-spacing-2, 8px);
+    flex-wrap: wrap;
+}
+
+.clipboard-workspace__search {
+    width: 100%;
+}
+
+.clipboard-workspace__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gdn-sys-spacing-3, 12px);
+    text-align: center;
+}
+
+.clipboard-workspace__empty-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--gdn-sys-color-secondary-container, #e8def8);
+    color: var(--gdn-sys-color-on-secondary-container, #1d192b);
+}

@@ -129,4 +129,19 @@
   <data name="EncryptedItemFormat" xml:space="preserve">
     <value>E2EE Encrypted ({0} bytes)</value>
   </data>
+  <data name="SectionTitle" xml:space="preserve">
+    <value>Clipboard History</value>
+  </data>
+  <data name="EmptyDescription" xml:space="preserve">
+    <value>Copy text on your PC (Ctrl+C) or share from your mobile device to sync with AES-256-GCM end-to-end encryption.</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="FilterText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="FilterImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
 </root>

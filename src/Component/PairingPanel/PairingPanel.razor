@@ -1,37 +1,115 @@
 @namespace Orchid.Desktop.Component
+@using Microsoft.AspNetCore.Components
+@using Orchid.Core.Abstraction
 @using Orchid.Core.Sync
 @using Orchid.Core.Sync.Relay
+@using Orchid.Desktop.Service
 @inject ClipboardSyncCoordinator Coordinator
+@inject ISystemClipboard SystemClipboard
 @inject IStringLocalizer<PairingPanelResource> Localizer
 
-<GardenCard Type="GardenCardType.Elevated" Style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
-    <GardenTypography HtmlTag="h2" Typo="TypographyStyle.Title" Size="TypographySize.Medium">
-        @Localizer[nameof(PairingPanelResource.Title)]
-    </GardenTypography>
-    @if (_payload is null)
-    {
-        <div>
-            <GardenButton Variant="GardenButtonVariant.Filled" Size="GardenButtonSize.Small" OnClick="StartAsync">
-                @Localizer[nameof(PairingPanelResource.StartPairing)]
-            </GardenButton>
+@* // ✅ 좌측에는 상태 배지·안내·페어링 키 값 및 복사/재발급 액션을, 우측에는 스캔용 QR 코드 SVG를 배치한다 *@
+<GardenCard Type="GardenCardType.Elevated" Style="padding: 24px;">
+    <div class="pairing-dashboard">
+        <div class="pairing-dashboard__content">
+            <div class="pairing-dashboard__header">
+                <div class="pairing-dashboard__title-group">
+                    <GardenTypography HtmlTag="h2" Typo="TypographyStyle.Title" Size="TypographySize.Medium">
+                        @Localizer[nameof(PairingPanelResource.Title)]
+                    </GardenTypography>
+                    @if (_payload is not null)
+                    {
+                        <GardenChipAssist Icon="@Icons.Material.Filled.QrCode2"
+                                          Label="@Localizer[nameof(PairingPanelResource.StatusReadyBadge)]"
+                                          Variant="GardenChipAssistVariant.Elevated" />
+                    }
+                </div>
+                <GardenButton Variant="GardenButtonVariant.Outlined"
+                              Size="GardenButtonSize.Small"
+                              OnClick="StartAsync">
+                    @(_payload is null
+                        ? Localizer[nameof(PairingPanelResource.StartPairing)]
+                        : Localizer[nameof(PairingPanelResource.RegenerateKeyButton)])
+                </GardenButton>
+            </div>
+
+            <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
+                @Localizer[nameof(PairingPanelResource.ScanOrEnterKeyGuide)]
+            </GardenTypography>
+
+            @if (_payload is not null)
+            {
+                <div class="pairing-dashboard__key-box">
+                    <div class="pairing-dashboard__key-field">
+                        <GardenTextField Value="@_payload"
+                                         ReadOnly="true"
+                                         Label="@Localizer[nameof(PairingPanelResource.PairingKeyLabel)]" />
+                    </div>
+                    <GardenButton Variant="GardenButtonVariant.Filled"
+                                  Size="GardenButtonSize.Small"
+                                  OnClick="CopyKeyAsync">
+                        @(_isCopied
+                            ? Localizer[nameof(PairingPanelResource.CopiedKeyButton)]
+                            : Localizer[nameof(PairingPanelResource.CopyKeyButton)])
+                    </GardenButton>
+                </div>
+            }
         </div>
-    }
-    else
-    {
-        <GardenTypography Typo="TypographyStyle.Body" Size="TypographySize.Medium">
-            @Localizer[nameof(PairingPanelResource.ScanOrEnterKeyGuide)]
-        </GardenTypography>
-        <GardenTextField Value="@_payload" ReadOnly="true" Label="@Localizer[nameof(PairingPanelResource.PairingKeyLabel)]" />
-    }
+
+        @if (_qrSvgMarkup is not null)
+        {
+            <div class="pairing-dashboard__qr-card" data-testid="pairing-qr-container">
+                <div class="pairing-dashboard__qr-frame">
+                    @((MarkupString)_qrSvgMarkup)
+                </div>
+                <span class="pairing-dashboard__qr-caption">
+                    @Localizer[nameof(PairingPanelResource.QrScanCaption)]
+                </span>
+            </div>
+        }
+    </div>
 </GardenCard>
 
 @code {
     private string? _payload;
+    private string? _qrSvgMarkup;
+    private bool _isCopied;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        if (_payload is null)
+        {
+            await StartAsync();
+        }
+    }
 
     private async Task StartAsync()
     {
         PairingKey key = PairingKey.Generate();
-        await Coordinator.StartAsync(key, Guid.NewGuid());
-        _payload = key.ToPayload();
+        string payload = key.ToPayload();
+        _payload = payload;
+        _qrSvgMarkup = PairingQrCodeSvgGenerator.GenerateSvg(payload);
+        _isCopied = false;
+
+        try
+        {
+            await Coordinator.StartAsync(key, Guid.NewGuid());
+        }
+        catch (Exception)
+        {
+            // 오프라인 또는 로컬 단독 실행 시에도 화면에 QR 코드와 페어링 키 값을 유지한다.
+        }
+    }
+
+    private async Task CopyKeyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_payload))
+        {
+            return;
+        }
+
+        await SystemClipboard.SetTextAsync(_payload);
+        _isCopied = true;
     }
 }

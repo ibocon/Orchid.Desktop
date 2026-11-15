@@ -17,6 +17,21 @@ public sealed class ClipboardListResource
     /// <summary>암호화 항목 표시 형식 리소스 키.</summary>
     public const string EncryptedItemFormat = nameof(EncryptedItemFormat);
 
+    /// <summary>클립보드 섹션 제목 리소스 키.</summary>
+    public const string SectionTitle = nameof(SectionTitle);
+
+    /// <summary>빈 기록 보조 설명 문구 리소스 키.</summary>
+    public const string EmptyDescription = nameof(EmptyDescription);
+
+    /// <summary>전체 필터 레이블 리소스 키.</summary>
+    public const string FilterAll = nameof(FilterAll);
+
+    /// <summary>텍스트 필터 레이블 리소스 키.</summary>
+    public const string FilterText = nameof(FilterText);
+
+    /// <summary>이미지 필터 레이블 리소스 키.</summary>
+    public const string FilterImage = nameof(FilterImage);
+
     private ClipboardListResource()
     {
     }

@@ -1,0 +1,10 @@
+.desktop-dashboard {
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: var(--gdn-sys-spacing-6, 24px) var(--gdn-sys-spacing-4, 16px) var(--gdn-sys-spacing-10, 40px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gdn-sys-spacing-5, 20px);
+    box-sizing: border-box;
+}

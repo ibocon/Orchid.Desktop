@@ -124,9 +124,24 @@
     <value>페어링 시작</value>
   </data>
   <data name="ScanOrEnterKeyGuide" xml:space="preserve">
-    <value>모바일에서 아래 키를 스캔하거나 입력하세요.</value>
+    <value>모바일에서 우측 QR 코드를 스캔하거나 아래 페어링 키를 입력하세요.</value>
   </data>
   <data name="PairingKeyLabel" xml:space="preserve">
     <value>페어링 키</value>
+  </data>
+  <data name="StatusReadyBadge" xml:space="preserve">
+    <value>스캔 준비됨</value>
+  </data>
+  <data name="CopyKeyButton" xml:space="preserve">
+    <value>키 복사</value>
+  </data>
+  <data name="CopiedKeyButton" xml:space="preserve">
+    <value>복사됨</value>
+  </data>
+  <data name="RegenerateKeyButton" xml:space="preserve">
+    <value>새 키 발급</value>
+  </data>
+  <data name="QrScanCaption" xml:space="preserve">
+    <value>모바일 카메라로 스캔</value>
   </data>
 </root>
