@@ -8,7 +8,7 @@ using Xunit;
 namespace Orchid.UnitTests.Desktop;
 
 /// <summary>
-/// Orchid.Desktop의 앱 아이콘(SVG/ICO) 및 Windows Store MSIX 시각 자산 규격을 검증하는 단위 테스트입니다.
+/// Orchid.Desktop의 보태니컬 브랜드 로고(SVG/ICO) 디자인 토큰 정합성 및 Windows Store MSIX 시각 자산 규격을 검증하는 단위 테스트입니다.
 /// </summary>
 public sealed class DesktopVisualAssetsContractTest
 {
@@ -38,19 +38,53 @@ public sealed class DesktopVisualAssetsContractTest
     }
 
     [Fact]
-    public void SvgAndIcoAppIconAssetsShouldBeConfiguredInCsproj()
+    public void SvgAndIcoAppIconAssetsShouldBeConfiguredWithBotanicCreamColorInCsproj()
     {
         // Given
         string repoRoot = FindRepositoryRoot();
         string csproj = File.ReadAllText(Path.Combine(repoRoot, "src/Orchid.Desktop.csproj"));
+        string appIconSvg = File.ReadAllText(Path.Combine(repoRoot, "src/Resources/AppIcon/appicon.svg"));
 
         // When & Then
-        // ✅ SVG 원본과 .ico 파일이 존재하고 csproj에 MauiIcon 및 ApplicationIcon으로 연결된다
+        // ✅ SVG 원본과 .ico 파일이 존재하고 csproj에 BotanicSoft/Peony 공통 크림 배경(#F1E4CA)으로 연결된다
         File.Exists(Path.Combine(repoRoot, "src/Resources/AppIcon/appicon.svg")).Should().BeTrue();
         File.Exists(Path.Combine(repoRoot, "src/Resources/AppIcon/appiconfg.svg")).Should().BeTrue();
         File.Exists(Path.Combine(repoRoot, "src/Resources/AppIcon/appicon.ico")).Should().BeTrue();
+        appIconSvg.Should().Contain("#F1E4CA");
+        appIconSvg.Should().NotContain("linearGradient");
         csproj.Should().Contain("MauiIcon Include=\"Resources\\AppIcon\\appicon.svg\"");
+        csproj.Should().Contain("Color=\"#F1E4CA\"");
+        csproj.Should().NotContain("#2E1065");
         csproj.Should().Contain("<ApplicationIcon>Resources\\AppIcon\\appicon.ico</ApplicationIcon>");
+    }
+
+    [Theory]
+    [InlineData("src/Resources/AppIcon/appiconfg.svg")]
+    [InlineData("src/wwwroot/logo-login.svg")]
+    public void BotanicalOrchidForegroundAndLoginLogoShouldUseFamilyTokensAndTransparentBackground(string relativePath)
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string svg = File.ReadAllText(Path.Combine(repoRoot, relativePath));
+
+        // When & Then
+        // ✅ Peony.Mobile 공통 잉크(#6D5443)·잎(#78D978) 토큰과 카틀레야/호접란 5화피·프릴 설판·화통 토큰(#EADDFF, #B69DF8, #9A82DB, #6750A4, #F6C667, #FFE2E4)을 사용하며 불투명 배경이나 레거시 그라데이션이 없다
+        svg.Should().Contain("#6D5443");
+        svg.Should().Contain("#78D978");
+        svg.Should().Contain("#EADDFF");
+        svg.Should().Contain("#B69DF8");
+        svg.Should().Contain("#9A82DB");
+        svg.Should().Contain("#6750A4");
+        svg.Should().Contain("#F6C667");
+        svg.Should().Contain("#FFE2E4");
+        svg.Should().Contain("sepal-lower-left");
+        svg.Should().Contain("sepal-lower-right");
+        svg.Should().Contain("labellum-throat");
+        svg.Should().NotContain("linearGradient");
+        svg.Should().NotContain("radialGradient");
+        svg.Should().NotContain("#1E1B4B");
+        svg.Should().NotContain("#7C3AED");
+        svg.Should().NotContain("fill:#F1E4CA");
     }
 
     private static string FindRepositoryRoot()

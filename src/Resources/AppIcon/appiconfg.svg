@@ -1,12 +1,168 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Back clipboard card (Desktop) -->
-  <rect x="116" y="108" width="184" height="232" rx="28" fill="#DDD6FE" fill-opacity="0.24" stroke="#E9D5FF" stroke-width="14" />
-  <rect x="168" y="88" width="80" height="36" rx="14" fill="#EDE9FE" />
-  <!-- Front clipboard card (Mobile/Bridge) -->
-  <rect x="212" y="168" width="184" height="236" rx="28" fill="#FFFFFF" stroke="#F5F3FF" stroke-width="12" />
-  <rect x="264" y="148" width="80" height="36" rx="14" fill="#C4B5FD" />
-  <!-- Bidirectional bridge arrows / E2EE sync lines -->
-  <path d="M252 248 H356 M252 292 H332 M252 336 H312" stroke="#5B21B6" stroke-width="18" stroke-linecap="round" />
-  <circle cx="196" cy="286" r="44" fill="#6D28D9" stroke="#F5F3FF" stroke-width="12" />
-  <path d="M176 286 L191 301 L218 272" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1024"
+     height="1024"
+     role="img"
+     aria-label="BotanicSoft orchid logo"
+     viewBox="0 0 1024 1024"
+     fill="none">
+    <title>BotanicSoft Orchid</title>
+    <desc>A botanical Cattleya orchid bloom mark drawn with a bold botanical outline, ruffled wing petals, frilled three-lobed trumpet labellum with golden throat striations, and arching orchid leaves.</desc>
+    <!-- Tokens: ink #6D5443, leaf #78D978, petals #EADDFF #B69DF8 #9A82DB, labellum #6750A4, core #FFE2E4, nectar #F6C667. -->
+    <g transform="translate(512 512) scale(0.88) translate(-512 -512)">
+        <!-- Natural S-Curve Orchid Stem -->
+        <path id="stem"
+              d="M506 904C488 818 494 728 512 630"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="26"
+              stroke-linecap="round" />
+
+        <!-- Arching Lanceolate Orchid Strap Leaves (#78D978) -->
+        <path id="leaf-left"
+              d="M506 884C414 880 286 824 210 722C316 690 438 742 508 848Z"
+              fill="#78D978"
+              stroke="#6D5443"
+              stroke-width="18"
+              stroke-linejoin="round" />
+        <path id="leaf-right"
+              d="M508 884C602 880 732 820 812 714C704 684 580 738 508 848Z"
+              fill="#78D978"
+              stroke="#6D5443"
+              stroke-width="18"
+              stroke-linejoin="round" />
+        <!-- Leaf Midrib Veins -->
+        <path id="leaf-vein-left"
+              d="M488 858C416 810 336 768 258 738"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="10"
+              stroke-linecap="round" />
+        <path id="leaf-vein-right"
+              d="M528 858C602 808 684 764 762 732"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="10"
+              stroke-linecap="round" />
+
+        <!-- 1. Dorsal Sepal (12 o'clock Upright Acuminate Cattleya Sepal) -->
+        <path id="sepal-top"
+              d="M472 436C438 334 440 210 486 116C498 92 510 82 520 96C566 172 582 310 552 436Z"
+              fill="#EADDFF"
+              stroke="#6D5443"
+              stroke-width="20"
+              stroke-linejoin="round" />
+        <path id="sepal-top-vein"
+              d="M512 392C510 298 510 208 514 132"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.52" />
+
+        <!-- 2. Lower Left Lateral Sepal (7-8 o'clock Sweeping Lanceolate Sepal) -->
+        <path id="sepal-lower-left"
+              d="M482 460C392 492 308 558 268 638C254 666 276 690 312 680C404 654 476 574 504 490Z"
+              fill="#EADDFF"
+              stroke="#6D5443"
+              stroke-width="20"
+              stroke-linejoin="round" />
+
+        <!-- 3. Lower Right Lateral Sepal (4-5 o'clock Sweeping Lanceolate Sepal) -->
+        <path id="sepal-lower-right"
+              d="M542 460C632 492 716 558 756 638C770 666 748 690 712 680C620 654 548 574 520 490Z"
+              fill="#EADDFF"
+              stroke="#6D5443"
+              stroke-width="20"
+              stroke-linejoin="round" />
+
+        <!-- 4. Broad Ruffled Left Cattleya Wing Petal (9-10 o'clock 3-Wave Margin) -->
+        <path id="petal-left"
+              d="M482 430C420 302 304 214 204 232C154 242 136 288 154 330C120 360 118 412 154 446C146 488 182 526 238 530C330 536 420 500 488 462Z"
+              fill="#B69DF8"
+              stroke="#6D5443"
+              stroke-width="20"
+              stroke-linejoin="round" />
+        <!-- Left Wing Delicate Fan Veins -->
+        <path id="petal-left-vein-1"
+              d="M452 422C376 350 290 300 204 282"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+        <path id="petal-left-vein-2"
+              d="M444 440C354 402 266 384 180 386"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+        <path id="petal-left-vein-3"
+              d="M446 456C366 456 290 466 220 482"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+
+        <!-- 5. Broad Ruffled Right Cattleya Wing Petal (2-3 o'clock 3-Wave Margin) -->
+        <path id="petal-right"
+              d="M542 430C604 302 720 214 820 232C870 242 888 288 870 330C904 360 906 412 870 446C878 488 842 526 786 530C694 536 604 500 536 462Z"
+              fill="#9A82DB"
+              stroke="#6D5443"
+              stroke-width="20"
+              stroke-linejoin="round" />
+        <!-- Right Wing Delicate Fan Veins -->
+        <path id="petal-right-vein-1"
+              d="M572 422C648 350 734 300 820 282"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+        <path id="petal-right-vein-2"
+              d="M580 440C670 402 758 384 844 386"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+        <path id="petal-right-vein-3"
+              d="M578 456C658 456 734 466 804 482"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="9"
+              stroke-linecap="round"
+              opacity="0.48" />
+
+        <!-- 6. Three-Lobed Frilled Cattleya Labellum (Side Lobes + 5-Scallop Ruffled Trumpet Skirt, #6750A4) -->
+        <path id="labellum"
+              d="M474 414C418 398 382 442 404 496C416 524 430 540 416 566C382 604 398 658 442 668C458 704 496 710 512 686C528 710 566 704 582 668C626 658 642 604 608 566C594 540 608 524 620 496C642 442 606 398 550 414Z"
+              fill="#6750A4"
+              stroke="#6D5443"
+              stroke-width="22"
+              stroke-linejoin="round" />
+
+        <!-- 7. Golden-Amber Cattleya Throat & Radiating Striations (#F6C667) -->
+        <path id="labellum-throat"
+              d="M474 448C442 468 440 524 466 566C484 594 498 610 512 620C526 610 540 594 558 566C584 524 582 468 550 448Z"
+              fill="#F6C667"
+              stroke="#6D5443"
+              stroke-width="14"
+              stroke-linejoin="round" />
+        <path id="throat-veins"
+              d="M512 474V590M494 484C482 514 470 540 460 558M530 484C542 514 554 540 564 558"
+              fill="none"
+              stroke="#6D5443"
+              stroke-width="10"
+              stroke-linecap="round" />
+
+        <!-- 8. Compact Arched Orchid Column Hood (Gynostemium, #FFE2E4) -->
+        <path id="stigma-core"
+              d="M478 430C478 392 546 392 546 430C546 452 530 464 512 464C494 464 478 452 478 430Z"
+              fill="#FFE2E4"
+              stroke="#6D5443"
+              stroke-width="16"
+              stroke-linejoin="round" />
+    </g>
 </svg>

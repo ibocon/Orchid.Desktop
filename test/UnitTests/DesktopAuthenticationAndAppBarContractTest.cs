@@ -1,3 +1,7 @@
+// keep: System.Net.Sockets for loopback callback simulation
+using System.Net.Sockets;
+// keep: System.Text for HTTP request/response encoding
+using System.Text;
 // keep: FluentAssertions assertions
 using FluentAssertions;
 // keep: Orchid.Desktop service namespace
@@ -54,6 +58,97 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         signInTask.IsFaulted.Should().BeFalse();
         signInTask.IsCanceled.Should().BeFalse();
         authService.IsAuthenticated.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BuildAuthorizationUrlShouldUseRegisteredKeycloakLoopbackRedirectUrisPerProvider()
+    {
+        // Given
+        OrchidDesktopAuthService authService = new(browserLauncher: _ => null);
+
+        // When
+        string googleUrl = authService.BuildAuthorizationUrl("google").AbsoluteUri;
+        string kakaoUrl = authService.BuildAuthorizationUrl("kakao").AbsoluteUri;
+        string microsoftUrl = authService.BuildAuthorizationUrl("microsoft").AbsoluteUri;
+
+        // Then
+        // ✅ Google과 Kakao는 garden-staging realm의 peony-mobile 클라이언트와 고정 43717 포트(/callback 후행 슬래시 없음)를 사용한다
+        googleUrl.Should().Contain("/realms/garden-staging/protocol/openid-connect/auth");
+        googleUrl.Should().Contain("client_id=peony-mobile");
+        googleUrl.Should().Contain("kc_idp_hint=google");
+        googleUrl.Should().Contain("redirect_uri=http%3A%2F%2F127.0.0.1%3A43717%2Fcallback");
+        googleUrl.Should().NotContain("redirect_uri=http%3A%2F%2F127.0.0.1%3A43717%2Fcallback%2F");
+
+        kakaoUrl.Should().Contain("/realms/garden-staging/protocol/openid-connect/auth");
+        kakaoUrl.Should().Contain("client_id=peony-mobile");
+        kakaoUrl.Should().Contain("kc_idp_hint=kakao");
+        kakaoUrl.Should().Contain("redirect_uri=http%3A%2F%2F127.0.0.1%3A43717%2Fcallback");
+
+        // ✅ Microsoft는 botanicsoft realm의 grafana-provisioner 클라이언트와 고정 8251 포트(/callback 후행 슬래시 없음)를 사용한다
+        microsoftUrl.Should().Contain("/realms/botanicsoft/protocol/openid-connect/auth");
+        microsoftUrl.Should().Contain("client_id=grafana-provisioner");
+        microsoftUrl.Should().Contain("scope=openid");
+        microsoftUrl.Should().Contain("kc_idp_hint=microsoft");
+        microsoftUrl.Should().Contain("redirect_uri=http%3A%2F%2F127.0.0.1%3A8251%2Fcallback");
+        microsoftUrl.Should().NotContain("redirect_uri=http%3A%2F%2F127.0.0.1%3A8251%2Fcallback%2F");
+
+        // ✅ Peony.Mobile 규약에 따라 appsettings.Staging.json 및 ConfigureIdentity()로 IdentityOptions가 구성된다
+        string repoRoot = FindRepositoryRoot();
+        string stagingSettings = File.ReadAllText(Path.Combine(repoRoot, "src/Resources/appsettings.Staging.json"));
+        string mauiProgram = File.ReadAllText(Path.Combine(repoRoot, "src/MauiProgram.cs"));
+        string identityExtension = File.ReadAllText(Path.Combine(repoRoot, "src/Service/MauiAppBuilderExtensions.Identity.cs"));
+        stagingSettings.Should().Contain("\"Identity\"");
+        stagingSettings.Should().Contain("\"BaseAddress\": \"https://stag.botanicsoft.com/keycloak\"");
+        stagingSettings.Should().Contain("\"Realm\": \"garden-staging\"");
+        stagingSettings.Should().Contain("\"ClientId\": \"peony-mobile\"");
+        stagingSettings.Should().Contain("\"RedirectUrl\": \"http://127.0.0.1:43717/callback\"");
+        stagingSettings.Should().Contain("\"ValidAudience\": \"peony-api-gateway\"");
+        mauiProgram.Should().Contain("builder.ConfigureIdentity();");
+        identityExtension.Should().Contain("IdentityOptions.DefaultSectionName");
+    }
+
+    [Fact]
+    public async Task SignInInteractiveAsyncShouldIgnoreFaviconAndCompleteOnCallbackCode()
+    {
+        // Given
+        Uri? launchedUri = null;
+        OrchidDesktopAuthService authService = new(browserLauncher: uri =>
+        {
+            launchedUri = uri;
+            return null;
+        });
+
+        // When
+        Task signInTask = authService.SignInInteractiveAsync("google");
+        await Task.Delay(100);
+
+        string faviconResponse = await SendLoopbackHttpGetAsync(43717, "/favicon.ico");
+        string callbackResponse = await SendLoopbackHttpGetAsync(43717, "/callback?code=test-auth-code&state=test-state");
+        await signInTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Then
+        // ✅ /favicon.ico 요청에는 404를 반환하고 대기를 유지하며, /callback?code=... 수신 시 200 응답 후 인증 세션을 완료한다
+        launchedUri.Should().NotBeNull();
+        launchedUri?.AbsoluteUri.Should().Contain("redirect_uri=http%3A%2F%2F127.0.0.1%3A43717%2Fcallback");
+        faviconResponse.Should().Contain("404 Not Found");
+        callbackResponse.Should().Contain("200 OK");
+        authService.IsAuthenticated.Should().BeTrue();
+        authService.CurrentUserName.Should().NotBeNullOrWhiteSpace();
+    }
+
+    private static async Task<string> SendLoopbackHttpGetAsync(int port, string pathAndQuery)
+    {
+        using TcpClient client = new();
+        await client.ConnectAsync("127.0.0.1", port).ConfigureAwait(false);
+        using NetworkStream stream = client.GetStream();
+        string largeBrowserHeader = new('a', 2048);
+        byte[] requestBytes = Encoding.ASCII.GetBytes(
+            $"GET {pathAndQuery} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nUser-Agent: Mozilla/5.0\r\nX-Browser-Padding: {largeBrowserHeader}\r\nConnection: close\r\n\r\n");
+        await stream.WriteAsync(requestBytes).ConfigureAwait(false);
+        await stream.FlushAsync().ConfigureAwait(false);
+
+        using StreamReader reader = new(stream, Encoding.UTF8);
+        return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
     [Fact]

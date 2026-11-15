@@ -3,7 +3,7 @@ namespace Orchid.Desktop.Service;
 /// <summary>
 /// MAUI 앱 빌더에 지역화 서비스를 등록하는 확장 메서드를 제공한다.
 /// </summary>
-public static class MauiAppBuilderExtensions
+public static partial class MauiAppBuilderExtensions
 {
     /// <summary>
     /// 지역화 서비스(<see cref="Microsoft.Extensions.Localization.IStringLocalizer{T}"/> 등)를

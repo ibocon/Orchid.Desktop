@@ -30,13 +30,13 @@ public static class MauiProgram
         builder.Services.AddGardenRazor();
         builder.Services.AddDesignSystem();
         builder.ConfigureLocalization();
+        builder.ConfigureIdentity();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 
         builder.Services.AddSingleton<ISystemClipboard, DesktopClipboardAdapter>();
-        builder.Services.AddSingleton<IOrchidDesktopAuthService, OrchidDesktopAuthService>();
         builder.Services.AddSingleton<IAesGcmCryptoService, AesGcmCryptoService>();
 
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "orchid.db");

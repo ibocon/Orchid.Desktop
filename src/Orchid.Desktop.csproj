@@ -37,7 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2E1065" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#F1E4CA" />
+    <EmbeddedResource Include="Resources\appsettings.Staging.json" />
     <Content Update="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
