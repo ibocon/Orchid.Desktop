@@ -24,6 +24,11 @@
     <ApplicationIcon>Resources\AppIcon\appicon.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <!-- ✅ Windows TFM 빌드 시 Per-Monitor V2 DPI 인식 매니페스트를 명시적으로 연결한다 -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <ApplicationManifest>Platforms\Windows\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- 기본은 staging, production 배포 시 -p:OrchidRelayUrl=... 로 덮어쓴다 -->
     <OrchidRelayUrl Condition="'$(OrchidRelayUrl)' == ''">https://stag.botanicsoft.com/orchid</OrchidRelayUrl>
