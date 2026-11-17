@@ -1,64 +1,12 @@
 @namespace Orchid.Desktop.Component
+@using Garden.Share
+@using Orchid.Core.Login
 @using Orchid.Desktop.Service
 @inject IOrchidDesktopAuthService AuthService
-@inject IStringLocalizer<LoginPanelResource> Localizer
-@inject DesignSystem DesignSystem
+@inject OrchidLoginOutcomeHandler Outcome
 @implements IDisposable
 
-@{
-    string loginButtonWidth = "80%";
-    string loginButtonHeight = DesignSystem.Layout.GetPixelString(14);
-    string loginButtonBorderRadius = DesignSystem.Layout.GetPixelString(4);
-    string ctaMinHeight = DesignSystem.Layout.GetPixelString(36);
-
-    string rootStyle = new StyleBuilder()
-        .AddStyle("--root-gap", DesignSystem.Layout.GetPixelString(8))
-        .AddStyle("--login-cta-min-height", ctaMinHeight)
-        .Build();
-}
-
-<div class="root" style="@rootStyle">
-    <div class="login-brand">
-        <img class="login-logo"
-             src="logo-login.svg"
-             alt="Universal Clipboard Bridge (모두클립)" />
-        <span class="login-wordmark">모두클립</span>
-    </div>
-    <div class="login-cta">
-        @if (_isSigningIn)
-        {
-            <div class="login-progress"
-                 role="status"
-                 aria-live="polite">
-                <GardenLoadingIndicator />
-                <span class="login-progress__label">@Localizer[nameof(LoginPanelResource.SigningIn)]</span>
-                <GardenButton Variant="GardenButtonVariant.Outlined"
-                              Size="GardenButtonSize.Small"
-                              OnClick="CancelSignIn">
-                    @Localizer[nameof(LoginPanelResource.CancelText)]
-                </GardenButton>
-            </div>
-        }
-        else
-        {
-            <GoogleLoginButton Width="@loginButtonWidth"
-                               Height="@loginButtonHeight"
-                               BorderRadius="@loginButtonBorderRadius"
-                               Text="@Localizer[nameof(LoginPanelResource.GoogleText)]"
-                               OnClick="@(() => SignInAsync("google"))" />
-            <KakaoLoginButton Width="@loginButtonWidth"
-                              Height="@loginButtonHeight"
-                              BorderRadius="@loginButtonBorderRadius"
-                              Text="@Localizer[nameof(LoginPanelResource.KakaoText)]"
-                              OnClick="@(() => SignInAsync("kakao"))" />
-            <MicrosoftLoginButton Width="@loginButtonWidth"
-                                  Height="@loginButtonHeight"
-                                  BorderRadius="@loginButtonBorderRadius"
-                                  Text="@Localizer[nameof(LoginPanelResource.MicrosoftText)]"
-                                  OnClick="@(() => SignInAsync("microsoft"))" />
-        }
-    </div>
-</div>
+<LoginScreen Branding="_branding"><ProgressIndicator><GardenLoadingIndicator /></ProgressIndicator></LoginScreen>
 
 @code {
     /// <summary>
@@ -67,54 +15,18 @@
     [Parameter]
     public EventCallback OnAuthenticated { get; set; }
 
-    private bool _isSigningIn;
-    private CancellationTokenSource? _signInCts;
+    private readonly LoginBranding _branding = OrchidLoginBranding.Create();
 
-    private async Task SignInAsync(string provider)
-    {
-        if (_isSigningIn)
-        {
-            return;
-        }
+    protected override void OnInitialized() => Outcome.Authenticated += NotifyAuthenticatedAsync;
 
-        _isSigningIn = true;
-        _signInCts = new CancellationTokenSource();
-        StateHasChanged();
-        try
-        {
-            await AuthService.SignInInteractiveAsync(provider, _signInCts.Token);
-            if (AuthService.IsAuthenticated)
-            {
-                await OnAuthenticated.InvokeAsync();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // 사용자가 로그인을 취소했거나 로그인 대기가 중단된 경우 로그인 화면으로 복귀한다.
-        }
-        finally
-        {
-            _isSigningIn = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void CancelSignIn(MouseEventArgs _)
-    {
-        _signInCts?.Cancel();
-        AuthService.CancelSignIn();
-        _isSigningIn = false;
-        StateHasChanged();
-    }
+    private Task NotifyAuthenticatedAsync() => InvokeAsync(() => OnAuthenticated.InvokeAsync());
 
     /// <summary>
     /// 컴포넌트 해제 시 진행 중인 로그인 대기를 취소하고 리소스를 정리합니다.
     /// </summary>
     public void Dispose()
     {
-        _signInCts?.Cancel();
+        Outcome.Authenticated -= NotifyAuthenticatedAsync;
         AuthService.CancelSignIn();
-        _signInCts?.Dispose();
-        _signInCts = null;
     }
 }

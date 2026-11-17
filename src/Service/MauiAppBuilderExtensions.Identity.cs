@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
 using Garden.Share;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Orchid.Core.Login;
 
 namespace Orchid.Desktop.Service;
 
@@ -22,6 +24,9 @@ public static partial class MauiAppBuilderExtensions
         IdentityOptions configuredOptions = LoadEmbeddedIdentityOptions();
         builder.Services.AddSingleton<IOptions<IdentityOptions>>(Options.Create(configuredOptions));
         builder.Services.AddSingleton<IOrchidDesktopAuthService, OrchidDesktopAuthService>();
+        builder.Services.TryAddSingleton<IResourceOwnerAuth, OrchidDesktopResourceOwnerAuth>();
+        builder.Services.TryAddScoped<OrchidLoginOutcomeHandler>();
+        builder.Services.TryAddScoped<ILoginOutcomeHandler>(provider => provider.GetRequiredService<OrchidLoginOutcomeHandler>());
 
         return builder;
     }

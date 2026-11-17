@@ -6,7 +6,6 @@
   -->
   <Import Project="Component\ClipboardList\ClipboardList.props" />
   <Import Project="Component\DesktopApp\DesktopApp.props" />
-  <Import Project="Component\LoginPanel\LoginPanel.props" />
   <Import Project="Component\PairingPanel\PairingPanel.props" />
 
   <Import Project="Service\Localization\ResourceShared.props" />

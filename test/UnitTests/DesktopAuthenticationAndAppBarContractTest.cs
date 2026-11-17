@@ -165,9 +165,7 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         indexHtml.Should().Contain("Orchid.Desktop.styles.css");
         desktopApp.Should().Contain("<GardenTopAppBar");
         desktopApp.Should().Contain("<GardenAccountMenu");
-        loginPanel.Should().Contain("<GoogleLoginButton");
-        loginPanel.Should().Contain("<KakaoLoginButton");
-        loginPanel.Should().Contain("<MicrosoftLoginButton");
+        loginPanel.Should().Contain("<LoginScreen Branding=\"_branding\">");
     }
 
     [Fact]
@@ -177,7 +175,6 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         string repoRoot = FindRepositoryRoot();
         string logoPath = Path.Combine(repoRoot, "src/wwwroot/logo-login.svg");
         string loginPanelPath = Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor");
-        string loginPanelCssPath = Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor.css");
 
         // When & Then
         // ✅ logo-login.svg 브랜드 심볼이 존재하고 유효한 SVG 마크업을 포함한다
@@ -186,30 +183,11 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
 
         // ✅ LoginPanel.razor는 Peony.Mobile과 동일한 브랜드 레이아웃 구조를 따른다
         string loginPanel = File.ReadAllText(loginPanelPath);
-        loginPanel.Should().Contain("class=\"root\"");
-        loginPanel.Should().Contain("class=\"login-brand\"");
-        loginPanel.Should().Contain("logo-login.svg");
-        loginPanel.Should().Contain("class=\"login-wordmark\"");
-        loginPanel.Should().Contain("모두클립");
-        loginPanel.Should().Contain("class=\"login-cta\"");
-        loginPanel.Should().Contain("<GoogleLoginButton");
-        loginPanel.Should().Contain("<KakaoLoginButton");
-        loginPanel.Should().Contain("<MicrosoftLoginButton");
-        loginPanel.Should().Contain("class=\"login-progress\"");
-        loginPanel.Should().Contain("IStringLocalizer<LoginPanelResource>");
+        loginPanel.Should().Contain("<LoginScreen Branding=\"_branding\">");
+        loginPanel.Should().Contain("OrchidLoginBranding.Create()");
 
         // ✅ 로그인 대기 중 취소 버튼과 상태 복구 가드가 구성된다
-        loginPanel.Should().Contain("CancelSignIn");
-        loginPanel.Should().Contain("<GardenButton");
-        loginPanel.Should().Contain("AuthService.IsAuthenticated");
-        loginPanel.Should().Contain("InvokeAsync(StateHasChanged)");
-
-        // ✅ LoginPanel.razor.css가 존재하고 Garden 디자인 토큰을 사용한다
-        File.Exists(loginPanelCssPath).Should().BeTrue(because: "LoginPanel 스코프드 CSS가 존재해야 한다.");
-        string loginPanelCss = File.ReadAllText(loginPanelCssPath);
-        loginPanelCss.Should().Contain("--gdn-sys-color-on-surface");
-        loginPanelCss.Should().Contain("--gdn-sys-color-on-surface-variant");
-        loginPanelCss.Should().Contain("--gdn-sys-spacing-");
+        loginPanel.Should().Contain("AuthService.CancelSignIn");
     }
 
     [Fact]

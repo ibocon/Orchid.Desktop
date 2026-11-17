@@ -24,7 +24,6 @@ public sealed partial class DesktopLocalizationAndResourceContractTest
     [
         "ResourceShared",
         "DesktopAppResource",
-        "LoginPanelResource",
         "PairingPanelResource",
         "ClipboardListResource",
     ];
@@ -91,10 +90,6 @@ public sealed partial class DesktopLocalizationAndResourceContractTest
             Path.Combine(repoRoot, "src", "Component", "DesktopApp", "DesktopAppResource.resx"));
         XDocument desktopKorean = XDocument.Load(
             Path.Combine(repoRoot, "src", "Component", "DesktopApp", "DesktopAppResource.ko-KR.resx"));
-        XDocument loginNeutral = XDocument.Load(
-            Path.Combine(repoRoot, "src", "Component", "LoginPanel", "LoginPanelResource.resx"));
-        XDocument loginKorean = XDocument.Load(
-            Path.Combine(repoRoot, "src", "Component", "LoginPanel", "LoginPanelResource.ko-KR.resx"));
 
         // When & Then
         // ✅ ResourceShared: 앱 이름과 창 제목이 문화권별 문구를 제공한다
@@ -109,19 +104,6 @@ public sealed partial class DesktopLocalizationAndResourceContractTest
         FindResxValue(desktopNeutral, "SignOutLabel").Should().Be("Sign out");
         FindResxValue(desktopKorean, "SignOutLabel").Should().Be("로그아웃");
 
-        // ✅ LoginPanelResource: 로그인 제목은 문화권별 문구를 사용한다
-        FindResxValue(loginNeutral, "Title").Should().Be("Sign in to Universal Clipboard Bridge");
-        FindResxValue(loginKorean, "Title").Should().Be("모두클립 로그인");
-
-        // ✅ LoginPanelResource: 설명/소셜 로그인 문구는 중립 영문과 ko-KR 번역이 서로 다르다
-        foreach (string key in new[] { "Description", "GoogleText", "KakaoText", "MicrosoftText" })
-        {
-            string? neutralValue = FindResxValue(loginNeutral, key);
-            string? koreanValue = FindResxValue(loginKorean, key);
-            neutralValue.Should().NotBeNullOrWhiteSpace(because: $"LoginPanelResource.{key}는 중립 resx에 값이 있어야 한다.");
-            koreanValue.Should().NotBeNullOrWhiteSpace(because: $"LoginPanelResource.{key}는 ko-KR resx에 번역이 있어야 한다.");
-            koreanValue.Should().NotBe(neutralValue, because: $"LoginPanelResource.{key}는 ko-KR 번역문이 영문 원문과 달라야 한다.");
-        }
     }
 
     /// <summary>
@@ -139,7 +121,7 @@ public sealed partial class DesktopLocalizationAndResourceContractTest
 
         // When & Then
         // ✅ ResourceShared, DesktopAppResource, LoginPanelResource, PairingPanelResource, ClipboardListResource 중립 resx가 존재한다
-        neutralResxFiles.Count.Should().BeGreaterThanOrEqualTo(5);
+        neutralResxFiles.Count.Should().BeGreaterThanOrEqualTo(4);
         HashSet<string> neutralNames = neutralResxFiles
             .Select(file => Path.GetFileNameWithoutExtension(file.Name))
             .ToHashSet(StringComparer.Ordinal);
@@ -264,7 +246,6 @@ public sealed partial class DesktopLocalizationAndResourceContractTest
         foreach ((string componentRelativePath, string markerName) in new[]
         {
             (Path.Combine("src", "Component", "DesktopApp", "DesktopApp.razor"), "DesktopAppResource"),
-            (Path.Combine("src", "Component", "LoginPanel", "LoginPanel.razor"), "LoginPanelResource"),
             (Path.Combine("src", "Component", "PairingPanel", "PairingPanel.razor"), "PairingPanelResource"),
             (Path.Combine("src", "Component", "ClipboardList", "ClipboardList.razor"), "ClipboardListResource"),
         })
