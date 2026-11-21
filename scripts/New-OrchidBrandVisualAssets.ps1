@@ -227,72 +227,80 @@ function Draw-OrchidSymbol {
     $ColumnPen.Dispose(); $ColumnBrush.Dispose(); $ColumnPath.Dispose()
 }
 
+function Read-OrchidMarkSvg {
+    param([Parameter(Mandatory)] [string] $Path)
+
+    [xml] $Doc = [System.IO.File]::ReadAllText($Path)
+    $Ns = [System.Xml.XmlNamespaceManager]::new($Doc.NameTable)
+    $Ns.AddNamespace('s', 'http://www.w3.org/2000/svg')
+    $Group = $Doc.SelectSingleNode('//s:g', $Ns)
+    if ($null -eq $Group) {
+        throw "appiconfg.svg에 그룹이 없다: $Path"
+    }
+
+    $Translate = [System.Drawing.PointF]::new(0, 0)
+    if ($Group.GetAttribute('transform') -match 'translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)\s*\)\s*$') {
+        $Translate = [System.Drawing.PointF]::new([float]$Matches[1], [float]$Matches[2])
+    }
+
+    $Ink = [System.Drawing.ColorTranslator]::FromHtml($Group.GetAttribute('stroke'))
+    $Paths = foreach ($Node in $Group.SelectNodes('s:path', $Ns)) {
+        $Numbers = [regex]::Matches(($Node.GetAttribute('d') -replace '[MCZ]', ' '), '-?\d+(?:\.\d+)?') | ForEach-Object { [double]$_.Value }
+        if ($Node.GetAttribute('d') -match '[^MCZ\d\s.\-]') {
+            throw "지원하지 않는 경로 명령: $($Node.GetAttribute('id'))"
+        }
+        [pscustomobject]@{
+            Id     = $Node.GetAttribute('id')
+            Fill   = [System.Drawing.ColorTranslator]::FromHtml($Node.GetAttribute('fill'))
+            Coords = [double[]] $Numbers
+        }
+    }
+
+    return [pscustomobject]@{
+        InkColor    = $Ink
+        StrokeWidth = [double] $Group.GetAttribute('stroke-width')
+        Translate   = $Translate
+        Paths       = @($Paths)
+    }
+}
+
 function Draw-CompactOrchidMark {
     param(
         [System.Drawing.Graphics] $G,
         [float] $CenterX,
         [float] $CenterY,
-        [float] $Size
+        [float] $Size,
+        [int] $RenderSize = 256
     )
 
+    $Mark = Read-OrchidMarkSvg -Path (Join-Path -Path $DesktopRepoRoot -ChildPath 'src\Resources\AppIcon\appiconfg.svg')
     $Scale = $Size / 1024.0
-
-    function New-MarkPoint {
-        param([double] $Px, [double] $Py)
-
-        return [System.Drawing.PointF]::new(
-            [float]($CenterX + ($Px - 512.0) * $Scale),
-            [float]($CenterY + ($Py - 512.0) * $Scale))
-    }
-
-    function New-MarkPath {
-        param([double[]] $Coordinates)
-
-        $Path = [System.Drawing.Drawing2D.GraphicsPath]::new()
-        $Path.StartFigure()
-        for ($I = 0; $I -lt $Coordinates.Count; $I += 8) {
-            $Path.AddBezier(
-                (New-MarkPoint $Coordinates[$I] $Coordinates[$I + 1]),
-                (New-MarkPoint $Coordinates[$I + 2] $Coordinates[$I + 3]),
-                (New-MarkPoint $Coordinates[$I + 4] $Coordinates[$I + 5]),
-                (New-MarkPoint $Coordinates[$I + 6] $Coordinates[$I + 7]))
-        }
-        $Path.CloseFigure()
-        return $Path
-    }
-
-    $Ink = [System.Drawing.Color]::FromArgb(255, 168, 121, 106)
-    $Outline = [System.Drawing.Pen]::new($Ink, [float][Math]::Max(1.2, 16 * $Scale))
+    $Outline = [System.Drawing.Pen]::new($Mark.InkColor, [float][Math]::Max(2.0, $Mark.StrokeWidth * $Scale))
     $Outline.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
     $Outline.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
     $Outline.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
 
-    foreach ($Petal in @(
-            @{ Color = [System.Drawing.Color]::FromArgb(255, 211, 190, 221); Coordinates = @(512, 176, 452, 246, 452, 356, 512, 440, 512, 440, 572, 356, 572, 246, 512, 176) },
-            @{ Color = [System.Drawing.Color]::FromArgb(255, 233, 178, 184); Coordinates = @(494, 406, 428, 336, 326, 320, 256, 356, 256, 356, 198, 362, 164, 406, 170, 462, 170, 462, 176, 516, 214, 554, 268, 562, 268, 562, 320, 620, 418, 596, 486, 526) },
-            @{ Color = [System.Drawing.Color]::FromArgb(255, 233, 178, 184); Coordinates = @(530, 406, 596, 336, 698, 320, 768, 356, 768, 356, 826, 362, 860, 406, 854, 462, 854, 462, 848, 516, 810, 554, 756, 562, 756, 562, 704, 620, 606, 596, 538, 526) })) {
-        $Path = New-MarkPath -Coordinates $Petal.Coordinates
-        $Brush = [System.Drawing.SolidBrush]::new($Petal.Color)
+    foreach ($Shape in $Mark.Paths) {
+        $Points = for ($I = 0; $I -lt $Shape.Coords.Count; $I += 2) {
+            [System.Drawing.PointF]::new(
+                [float]($CenterX + ($Shape.Coords[$I] + $Mark.Translate.X - 512.0) * $Scale),
+                [float]($CenterY + ($Shape.Coords[$I + 1] + $Mark.Translate.Y - 512.0) * $Scale))
+        }
+        $Path = [System.Drawing.Drawing2D.GraphicsPath]::new()
+        $Path.StartFigure()
+        for ($I = 0; $I + 3 -lt $Points.Count; $I += 3) {
+            $Path.AddBezier($Points[$I], $Points[$I + 1], $Points[$I + 2], $Points[$I + 3])
+        }
+        $Path.CloseFigure()
+        $Brush = [System.Drawing.SolidBrush]::new($Shape.Fill)
         $G.FillPath($Brush, $Path)
-        $G.DrawPath($Outline, $Path)
+        # 32px 이하에서는 화심 윤곽선을 그리지 않고 채우기만 한다.
+        if ($Shape.Id -ne 'orchid-throat' -or $RenderSize -gt 32) {
+            $G.DrawPath($Outline, $Path)
+        }
         $Brush.Dispose(); $Path.Dispose()
     }
-
-    $CorePath = New-MarkPath -Coordinates @(512, 470, 462, 470, 426, 508, 434, 552, 434, 552, 404, 580, 414, 624, 450, 634, 450, 634, 458, 672, 492, 692, 512, 664, 512, 664, 532, 692, 566, 672, 574, 634, 574, 634, 610, 624, 620, 580, 590, 552, 590, 552, 598, 508, 562, 470, 512, 470)
-    $CoreBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 169, 108, 142))
-    $G.FillPath($CoreBrush, $CorePath)
-    $G.DrawPath($Outline, $CorePath)
-    $CoreBrush.Dispose(); $CorePath.Dispose()
-
-    $ThroatBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 237, 194, 97))
-    $ThroatRect = [System.Drawing.RectangleF]::new(
-        [float]($CenterX - 32 * $Scale),
-        [float]($CenterY + (-12 * $Scale)),
-        [float](64 * $Scale),
-        [float](88 * $Scale))
-    $G.FillEllipse($ThroatBrush, $ThroatRect)
-    $G.DrawEllipse($Outline, $ThroatRect)
-    $ThroatBrush.Dispose(); $Outline.Dispose()
+    $Outline.Dispose()
 }
 
 function Save-BrandCanvasPng {
@@ -340,8 +348,8 @@ function Save-BrandCanvasPng {
     $BgBrush.Dispose()
 
     if ([string]::IsNullOrWhiteSpace($Title)) {
-        $SymbolSize = [float]([Math]::Min($Width, $Height) * $(if ($RoundedTile.IsPresent) { 1.0 } else { 0.92 }))
-        Draw-CompactOrchidMark -G $G -CenterX ($Width / 2.0) -CenterY ($Height / 2.0) -Size $SymbolSize
+        $SymbolSize = [float]([Math]::Min($Width, $Height) * $(if ($RoundedTile.IsPresent) { 1.12 } else { 0.92 }))
+        Draw-CompactOrchidMark -G $G -CenterX ($Width / 2.0) -CenterY ($Height / 2.0) -Size $SymbolSize -RenderSize ([Math]::Min($Width, $Height))
     }
     else {
         $IconSize = [float]([Math]::Min($Width, $Height) * 0.56)

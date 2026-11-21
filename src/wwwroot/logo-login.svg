@@ -7,11 +7,11 @@
     <title>Orchid</title>
     <desc>A complete warm-cream Orchid app tile with a soft hand-drawn orchid.</desc>
     <rect id="icon-tile" x="64" y="64" width="896" height="896" rx="184" fill="#F1E4CA" />
-    <g transform="translate(512 512) scale(1.28) translate(-512 -512)"
-       stroke="#A8796A" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
-        <path id="petal-top" fill="#D3BEDD" d="M512 194C432 278 440 390 512 478C584 390 592 278 512 194Z" />
-        <path id="petal-left" fill="#E9B2B8" d="M492 424C420 334 310 330 252 386C198 402 184 472 218 520C248 582 342 604 406 558C456 542 492 500 508 454C506 444 502 434 492 424Z" />
-        <path id="petal-right" fill="#E9B2B8" d="M532 424C604 334 714 330 772 386C826 402 840 472 806 520C776 582 682 604 618 558C568 542 532 500 516 454C518 444 522 434 532 424Z" />
+    <g transform="translate(512 512) scale(1.12) translate(-512 -512) translate(0 59)"
+       stroke="#6D5443" stroke-width="30" stroke-linejoin="round" stroke-linecap="round">
+        <path id="petal-top" fill="#BFA3DA" d="M512 194C432 278 440 390 512 478C584 390 592 278 512 194Z" />
+        <path id="petal-left" fill="#E58FA0" d="M490 424C413 334 294 330 231 386C173 402 158 472 194 520C227 582 328 604 398 558C452 542 490 500 508 454C506 444 501 434 490 424Z" />
+        <path id="petal-right" fill="#E58FA0" d="M534 424C611 334 730 330 793 386C851 402 866 472 830 520C797 582 696 604 626 558C572 542 534 500 516 454C518 444 523 434 534 424Z" />
         <path id="orchid-core" fill="#A96C8E" d="M512 494C458 494 424 534 438 576C402 604 414 656 456 662C466 706 496 728 512 696C528 728 558 706 568 662C610 656 622 604 586 576C600 534 566 494 512 494Z" />
         <path id="orchid-throat" fill="#EDC261" d="M512 514C492 514 478 534 486 552C468 548 452 564 458 582C466 598 488 600 500 584C506 598 518 598 524 584C536 600 558 598 566 582C572 564 556 548 538 552C546 534 532 514 512 514Z" />
     </g>

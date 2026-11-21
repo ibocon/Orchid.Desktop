@@ -70,11 +70,56 @@ public sealed class DesktopVisualAssetsContractTest
         // ✅ 작업표시줄 아이콘과 앱 내 로고는 동일한 다색 일러스트를 사용한다.
         foreground.Should().Contain("id=\"petal-top\"");
         foreground.Should().Contain("id=\"orchid-throat\"");
-        foreground.Should().Contain("#A8796A");
+        foreground.Should().Contain("stroke=\"#6D5443\"");
         foreground.Should().NotContain("id=\"icon-tile\"");
         foreground.Should().NotContain("taskbar-orchid");
         generator.Should().NotContain("Draw-TaskbarOrchidGlyph");
         generator.Should().Contain("Draw-CompactOrchidMark -G $G");
+        generator.Should().Contain("Read-OrchidMarkSvg");
+        generator.Should().NotContain("FromArgb(255, 168, 121, 106)");
+    }
+
+    [Fact]
+    public void ForegroundAndLoginMarkShouldShareThickInkOutlineAndPaths()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string foreground = File.ReadAllText(Path.Combine(repoRoot, "src/Resources/AppIcon/appiconfg.svg"));
+        string loginMark = File.ReadAllText(Path.Combine(repoRoot, "src/wwwroot/logo-login.svg"));
+
+        // When & Then
+        // ✅ 두 SVG는 같은 윤곽 굵기·색과 같은 꽃잎 경로를 사용한다.
+        foreground.Should().Contain("stroke-width=\"30\"").And.Contain("fill=\"#E58FA0\"").And.Contain("fill=\"#BFA3DA\"");
+        foreach (string id in PathIds)
+        {
+            ExtractPathData(foreground, id).Should().Be(ExtractPathData(loginMark, id));
+        }
+    }
+
+    [Fact]
+    public void IcoShouldContainAllRequiredSizes()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        byte[] ico = File.ReadAllBytes(Path.Combine(repoRoot, "src/Resources/AppIcon/appicon.ico"));
+
+        // When
+        int count = BitConverter.ToUInt16(ico, 4);
+        int[] sizes = Enumerable.Range(0, count).Select(i => ico[6 + (16 * i)] == 0 ? 256 : ico[6 + (16 * i)]).ToArray();
+
+        // Then
+        sizes.Should().BeEquivalentTo([16, 24, 32, 48, 64, 256]);
+    }
+
+    private static readonly string[] PathIds = ["petal-top", "petal-left", "petal-right", "orchid-core", "orchid-throat"];
+
+    private static string ExtractPathData(string svg, string id)
+    {
+        System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(
+            svg,
+            $"id=\"{id}\"[^>]* d=\"([^\"]+)\"");
+        match.Success.Should().BeTrue();
+        return match.Groups[1].Value;
     }
 
     [Fact]
@@ -88,9 +133,10 @@ public sealed class DesktopVisualAssetsContractTest
         // When & Then
         // ✅ 로그인 마크는 세 꽃잎과 작은 중심부만 남기고 데스크톱 캔버스는 투명하다.
         svg.Should().Contain("#A96C8E");
-        svg.Should().Contain("#E9B2B8");
-        svg.Should().Contain("#D3BEDD");
-        svg.Should().Contain("#A8796A");
+        svg.Should().Contain("#E58FA0");
+        svg.Should().Contain("#BFA3DA");
+        svg.Should().Contain("stroke=\"#6D5443\"");
+        svg.Should().Contain("stroke-width=\"30\"");
         svg.Should().Contain("id=\"petal-top\"");
         svg.Should().Contain("id=\"petal-left\"");
         svg.Should().Contain("id=\"petal-right\"");
