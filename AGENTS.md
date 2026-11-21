@@ -48,7 +48,7 @@ lib/
 ```
 
 <!-- HARNESS:START -->
-- 시작: `lib/Garden.Harness/src/agents/AGENT_CONTEXT.md`
+- 시작: `lib/Garden.Harness/src/agents/AGENT_CONTEXT.md`; 에이전트 동기화: `lib/Garden.Harness/src/agents/scripts/Sync-SharedAgents.ps1`
 - 라우터: `lib/Garden.Harness/src/agents/skills/orchestrate-workflows/SKILL.md`
 - 워크플로우: `lib/Garden.Harness/src/core/docs/harness-workflow.md`
 - 검증: `lib/Garden.Harness/src/agents/skills/verify-completion/SKILL.md`

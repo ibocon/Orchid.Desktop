@@ -38,4 +38,14 @@ exit 0
         $CapturedArgs | Should -Contain '-p:WindowsPackageType=None'
         $CapturedArgs | Should -Contain '-p:OrchidRelayUrl=https://stag.botanicsoft.com/orchid'
     }
+
+    It '실시간 로그 추적 계약에 NoLog 옵션과 PID 필터를 선언한다' {
+        # Given
+        $ScriptContent = Get-Content -LiteralPath $script:ScriptPath -Raw
+
+        # When / Then
+        $ScriptContent | Should -Match '\[switch\] \$NoLog'
+        $ScriptContent | Should -Match 'Get-Content -LiteralPath \$LogFile\.FullName -Wait'
+        $ScriptContent | Should -Match '\$Entry\[''ProcessId''\] -ne \$ProcessId'
+    }
 }

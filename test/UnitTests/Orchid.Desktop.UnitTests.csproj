@@ -23,14 +23,19 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\MainWindowLayout.cs" Link="MainWindowLayout.cs" />
+    <Compile Include="..\..\src\Service\MainWindowSizePolicy.cs" Link="Service\MainWindowSizePolicy.cs" />
     <Compile Include="..\..\src\Service\IOrchidDesktopAuthService.cs" Link="Service\IOrchidDesktopAuthService.cs" />
     <Compile Include="..\..\src\Service\ObservableClipboardRepository.cs" Link="Service\ObservableClipboardRepository.cs" />
+    <Compile Include="..\..\src\Service\DesktopStartupLog.cs" Link="Service\DesktopStartupLog.cs" />
     <Compile Include="..\..\src\Service\OrchidDesktopAuthService.cs" Link="Service\OrchidDesktopAuthService.cs" />
     <Compile Include="..\..\src\Service\OrchidDesktopResourceOwnerAuth.cs" Link="Service\OrchidDesktopResourceOwnerAuth.cs" />
     <Compile Include="..\..\src\Service\Localization\Language.cs" Link="Service\Localization\Language.cs" />

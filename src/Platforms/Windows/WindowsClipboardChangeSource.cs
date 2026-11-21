@@ -50,6 +50,7 @@ public sealed partial class WindowsClipboardChangeSource : IClipboardChangeSourc
         }
 
         _isStarted = true;
+        _ = NotifyChangedAsync();
     }
 
     [LibraryImport("comctl32.dll", SetLastError = true)]

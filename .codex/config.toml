@@ -1,0 +1,117 @@
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+[agents]
+max_threads = 4
+max_depth = 1
+interrupt_message = true
+
+[mcp_servers.docker]
+command = "docker"
+args = [
+    "mcp",
+    "gateway",
+    "run",
+]
+
+[mcp_servers.garden-observability]
+command = "node"
+cwd = ".."
+args = [
+    "lib/Garden.Harness/src/agents/mcp/mcp-stdio-aggregator.mjs",
+    "--config",
+    "lib/Garden.Harness/src/agents/mcp/observability-upstreams.json",
+]
+startup_timeout_sec = 300
+
+[mcp_servers.garden-observability.env]
+KUBECONFIG = "${env:KUBECONFIG}"
+
+[mcp_servers.prometheus]
+command = "node"
+cwd = ".."
+args = [
+    "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+    "--lazy",
+    "prometheus",
+    "--",
+    "pwsh",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "lib/Garden.Harness/src/agents/mcp/Invoke-PrometheusMcpServer.ps1",
+]
+startup_timeout_sec = 300
+
+[mcp_servers.prometheus.env]
+KUBECONFIG = "${env:KUBECONFIG}"
+
+[mcp_servers.playwright]
+command = "node"
+cwd = ".."
+args = [
+    "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+    "--lazy",
+    "playwright",
+    "--",
+    "pwsh",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "lib/Garden.Harness/src/playwright/scripts/Invoke-PlaywrightMcpServer.ps1",
+    "-Channel",
+    "edge-debug",
+]
+
+[mcp_servers.playwright-webview2]
+command = "node"
+cwd = ".."
+args = [
+    "lib/Garden.Harness/src/agents/mcp/mcp-stdio-supervisor.mjs",
+    "--lazy",
+    "playwright-webview2",
+    "--",
+    "pwsh",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "lib/Garden.Harness/src/playwright/scripts/Invoke-PlaywrightMcpServer.ps1",
+    "-Channel",
+    "webview2",
+]
+
+[mcp_servers.figma]
+url = "https://mcp.figma.com/mcp"
+
+[mcp_servers.sentry]
+url = "https://mcp.sentry.dev/mcp/botanicsoft"
+
+[mcp_servers.posthog]
+url = "https://mcp.posthog.com/mcp"
+
+[mcp_servers.amplitude]
+url = "https://mcp.amplitude.com/mcp"
+
+[mcp_servers.notion]
+url = "https://mcp.notion.com/mcp"
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp/oauth"
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "GITHUB_PERSONAL_ACCESS_TOKEN"
+
+[mcp_servers.microsoft-learn]
+url = "https://learn.microsoft.com/api/mcp"
+
+[mcp_servers.penpot]
+url = "http://localhost:4401/mcp"
+
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+GIT_OPTIONAL_LOCKS = "0"

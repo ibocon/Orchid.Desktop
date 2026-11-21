@@ -1,0 +1,17 @@
+.login-panel {
+    display: flex;
+    min-height: 100%;
+}
+
+.login-panel ::deep .login-screen {
+    flex: 1 1 auto;
+    min-height: 100%;
+    /* 콘텐츠가 창보다 커도 위쪽이 잘리지 않고 .desktop-dashboard 스크롤로 도달할 수 있게 한다. */
+    justify-content: safe center;
+}
+
+/* Desktop 셸이 스크롤을 소유하므로, 콘텐츠 그룹은 자연 높이를 유지한다. */
+.login-panel ::deep .login-brand,
+.login-panel ::deep .login-cta {
+    flex: 0 0 auto;
+}

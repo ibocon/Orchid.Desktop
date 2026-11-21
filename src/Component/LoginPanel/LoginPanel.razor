@@ -6,7 +6,13 @@
 @inject OrchidLoginOutcomeHandler Outcome
 @implements IDisposable
 
-<LoginScreen Branding="_branding"><ProgressIndicator><GardenLoadingIndicator /></ProgressIndicator></LoginScreen>
+<section class="login-panel">
+    <LoginScreen Branding="_branding">
+        <ProgressIndicator>
+            <GardenLoadingIndicator />
+        </ProgressIndicator>
+    </LoginScreen>
+</section>
 
 @code {
     /// <summary>

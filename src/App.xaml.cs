@@ -21,23 +21,62 @@ public partial class App : Application
     {
         LanguageCultureResolver.Apply(Language.System, CultureInfo.InstalledUICulture);
         _localizer = localizer;
-        InitializeComponent();
+        try
+        {
+            InitializeComponent();
+            DesktopStartupLog.RecordPhase("maui-app-constructed");
+        }
+        catch (Exception exception)
+        {
+            DesktopStartupLog.RecordFatal("maui-app-xaml-initialize", exception);
+            throw;
+        }
+
         UserAppTheme = AppTheme.Light;
     }
 
     /// <inheritdoc />
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        double windowWidth = MainWindowLayout.Width;
-        double windowHeight = MainWindowLayout.Height;
+        DisplayInfo display = DeviceDisplay.Current.MainDisplayInfo;
+        WindowSize usableDisplay = new(display.Width / display.Density, display.Height / display.Density);
+        WindowSize initial = MainWindowSizePolicy.Resolve(PreferencesWindowSizeStore.Load(), usableDisplay);
 
-        return new Window(new MainPage())
+        DesktopStartupLog.RecordPhase("main-window-create");
+        Window window = new(new MainPage())
         {
             Title = _localizer[nameof(ResourceShared.WindowTitle)],
-            Width = windowWidth,
-            Height = windowHeight,
+            Width = initial.Width,
+            Height = initial.Height,
             MinimumWidth = MainWindowLayout.MinimumWidth,
             MinimumHeight = MainWindowLayout.MinimumHeight
         };
+
+        WindowSize? latest = null;
+        window.SizeChanged += (_, _) =>
+        {
+            WindowSize current = new(window.Width, window.Height);
+            if (WindowRestoreState.IsRestored(window) && MainWindowSizePolicy.IsPersistable(current))
+            {
+                latest = current;
+            }
+        };
+
+        void PersistLatest()
+        {
+            if (latest is { } size)
+            {
+                PreferencesWindowSizeStore.Save(size);
+            }
+        }
+
+        window.Deactivated += (_, _) => PersistLatest();
+        window.Destroying += (_, _) =>
+        {
+            PersistLatest();
+            DesktopStartupLog.Flush();
+        };
+
+        return window;
     }
 }

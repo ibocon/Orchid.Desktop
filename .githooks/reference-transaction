@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Garden.Harness raw ref creation guard. Installed by bootstrap.
+set -eu
+# GUI git 클라이언트(Sourcetree 등)는 로그인 셸 PATH를 상속하지 않으므로 pwsh 설치 경로를 보강한다.
+PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
+export PATH
+
+# linked worktree는 submodule이 비어 있을 수 있으므로 공용 git 디렉터리의 main worktree 기준으로 해석한다.
+# submodule처럼 git 디렉터리가 분리된 저장소는 core.worktree가 main worktree를 가리킨다.
+common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+repository_root="$(git --git-dir="$common_dir" config --get core.worktree || true)"
+case "$repository_root" in
+    '') repository_root="$(dirname "$common_dir")" ;;
+    /*) ;;
+    *) repository_root="$(cd "$common_dir" && cd "$repository_root" && pwd -P)" ;;
+esac
+exec pwsh -NoProfile -ExecutionPolicy Bypass -File "$repository_root/lib/Garden.Harness/src/git/scripts/Invoke-ReferenceTransaction.ps1" -State "$1" -RepositoryRoot "$repository_root" < /dev/null

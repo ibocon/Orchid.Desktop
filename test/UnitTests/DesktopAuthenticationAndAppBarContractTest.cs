@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 // keep: System.Text for HTTP request/response encoding
 using System.Text;
+using System.Text.Json;
 // keep: FluentAssertions assertions
 using FluentAssertions;
 // keep: Orchid.Desktop service namespace
@@ -112,11 +113,15 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
     {
         // Given
         Uri? launchedUri = null;
-        OrchidDesktopAuthService authService = new(browserLauncher: uri =>
-        {
-            launchedUri = uri;
-            return null;
-        });
+        const string expectedName = "Yegun Kim";
+        const string expectedEmail = "profile@example.com";
+        OrchidDesktopAuthService authService = CreateAuthService(
+            responseFactory: () => CreateTokenResponse(expectedName, expectedEmail),
+            browserLauncher: uri =>
+            {
+                launchedUri = uri;
+                return null;
+            });
 
         // When
         Task signInTask = authService.SignInInteractiveAsync("google");
@@ -133,7 +138,61 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         faviconResponse.Should().Contain("404 Not Found");
         callbackResponse.Should().Contain("200 OK");
         authService.IsAuthenticated.Should().BeTrue();
-        authService.CurrentUserName.Should().NotBeNullOrWhiteSpace();
+        authService.CurrentUserName.Should().Be(expectedName);
+        authService.CurrentUserEmail.Should().Be(expectedEmail);
+    }
+
+    [Fact]
+    public async Task SignInInteractiveAsyncShouldRemainUnauthenticatedWhenTokenExchangeFails()
+    {
+        // Given
+        OrchidDesktopAuthService authService = CreateAuthService(
+            responseFactory: () => new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway),
+            browserLauncher: _ => null);
+
+        // When
+        Task signInTask = authService.SignInInteractiveAsync("google");
+        await Task.Delay(100);
+        _ = await SendLoopbackHttpGetAsync(43717, "/callback?code=test-auth-code&state=test-state");
+        await signInTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Then
+        // ✅ 실패한 token 교환은 공급자 기반 더미 프로필을 만들지 않는다
+        authService.IsAuthenticated.Should().BeFalse();
+        authService.CurrentUserName.Should().BeEmpty();
+        authService.CurrentUserEmail.Should().BeEmpty();
+    }
+
+    private static OrchidDesktopAuthService CreateAuthService(
+        Func<HttpResponseMessage> responseFactory,
+        Func<Uri, System.Diagnostics.Process?> browserLauncher)
+    {
+        return new OrchidDesktopAuthService(
+            identityOptions: null,
+            browserLauncher: browserLauncher,
+            httpClientFactory: () => new HttpClient(new StubHttpMessageHandler(responseFactory)));
+    }
+
+    private static HttpResponseMessage CreateTokenResponse(string name, string email)
+    {
+        string payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+                JsonSerializer.Serialize(new { name, email })))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+        string token = $"header.{payload}.signature";
+        return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { id_token = token }))
+        };
+    }
+
+    private sealed class StubHttpMessageHandler(Func<HttpResponseMessage> responseFactory) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(responseFactory());
+        }
     }
 
     private static async Task<string> SendLoopbackHttpGetAsync(int port, string pathAndQuery)
@@ -191,6 +250,33 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
     }
 
     [Fact]
+    public void InitialLoginLayoutShouldConstrainContentToDesktopShell()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string appCss = File.ReadAllText(Path.Combine(repoRoot, "src/wwwroot/css/app.css"));
+        string desktopCss = File.ReadAllText(Path.Combine(repoRoot, "src/Component/DesktopApp/DesktopApp.razor.css"));
+        string loginPanel = File.ReadAllText(Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor"));
+        string loginCss = File.ReadAllText(Path.Combine(repoRoot, "src/Component/LoginPanel/LoginPanel.razor.css"));
+
+        // When
+        string layoutContract = string.Concat(appCss, desktopCss, loginPanel, loginCss);
+
+        // Then
+        // ✅ 초기 로그인은 앱 셸의 남은 높이를 사용하며 body 스크롤을 만들지 않는다.
+        layoutContract.Should().Contain("#app");
+        layoutContract.Should().Contain("grid-template-rows: auto minmax(0, 1fr);");
+        layoutContract.Should().Contain("overflow: hidden;");
+        loginPanel.Should().Contain("<section class=\"login-panel\">");
+        loginCss.Should().Contain(".login-panel ::deep .login-screen");
+        // ✅ Desktop 소비자 CSS가 브랜드와 CTA의 자연 높이를 보존한다.
+        loginCss.Should().Contain(".login-panel ::deep .login-brand,");
+        loginCss.Should().Contain(".login-panel ::deep .login-cta");
+        loginCss.Should().Contain("flex: 0 0 auto;");
+        loginCss.Should().Contain("justify-content: safe center;");
+    }
+
+    [Fact]
     public void DesignSystemProviderShouldDefaultToLightSchemeAndExposeBothPaletteMappings()
     {
         // Given
@@ -229,12 +315,12 @@ public sealed class DesktopAuthenticationAndAppBarContractTest
         desktopApp.Should().Contain("Icons.Material.Filled.LightMode");
         desktopApp.Should().Contain("Icons.Material.Filled.DarkMode");
 
-        // ✅ 네이티브 배경과 전역 CSS가 다크 HEX 하드코딩 없이 디자인 토큰을 사용한다
+        // ✅ 네이티브 배경과 전역 CSS가 다크 HEX 하드코딩 없이 투명 캔버스를 유지한다
         mainPageXaml.Should().NotContain("#121212");
         mainPageXaml.Should().NotContain("#1e1e1e");
         appCss.Should().NotContain("#121212");
         appCss.Should().NotContain("#1e1e1e");
-        appCss.Should().Contain("var(--gdn-sys-color-surface)");
+        appCss.Should().Contain("background-color: transparent;");
     }
 
     [Fact]

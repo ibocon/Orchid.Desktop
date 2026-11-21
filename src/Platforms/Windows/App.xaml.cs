@@ -1,3 +1,5 @@
+using Orchid.Desktop.Service;
+
 namespace Orchid.Desktop.WinUI;
 
 /// <summary>
@@ -10,12 +12,31 @@ public partial class App : MauiWinUIApplication
     /// </summary>
     public App()
     {
-        InitializeComponent();
+        DesktopStartupLog.Initialize();
+        DesktopStartupLog.RecordPhase("windows-app-constructed");
+        try
+        {
+            InitializeComponent();
+        }
+        catch (Exception exception)
+        {
+            DesktopStartupLog.RecordFatal("windows-xaml-initialize", exception);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     protected override MauiApp CreateMauiApp()
     {
-        return MauiProgram.CreateMauiApp();
+        DesktopStartupLog.RecordPhase("windows-create-maui-app");
+        try
+        {
+            return MauiProgram.CreateMauiApp();
+        }
+        catch (Exception exception)
+        {
+            DesktopStartupLog.RecordFatal("windows-create-maui-app", exception);
+            throw;
+        }
     }
 }

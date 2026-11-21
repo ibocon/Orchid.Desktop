@@ -10,18 +10,34 @@ public sealed class DesktopClipboardAdapter : ISystemClipboard
     /// <inheritdoc />
     public async Task<string?> GetTextAsync()
     {
+#if WINDOWS
+        return await
+            Orchid.Desktop.Platforms.Windows.Win32ClipboardListener.GetUnicodeTextAsync()
+            .ConfigureAwait(false);
+#else
         if (Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.HasText)
         {
-            return await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.GetTextAsync().ConfigureAwait(false);
+            return await
+                Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.GetTextAsync()
+                .ConfigureAwait(false);
         }
 
         return null;
+#endif
     }
 
     /// <inheritdoc />
     public async Task SetTextAsync(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
-        await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(text).ConfigureAwait(false);
+#if WINDOWS
+        await
+            Orchid.Desktop.Platforms.Windows.Win32ClipboardListener.SetUnicodeTextAsync(text)
+            .ConfigureAwait(false);
+#else
+        await
+            Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(text)
+            .ConfigureAwait(false);
+#endif
     }
 }

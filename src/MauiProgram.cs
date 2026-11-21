@@ -1,5 +1,6 @@
 using MudBlazor.Services;
 using Garden.Razor;
+using Microsoft.Extensions.Logging;
 using Orchid.Core.Abstraction;
 using Orchid.Core.Cryptography;
 using Orchid.Core.Storage;
@@ -7,6 +8,7 @@ using System.Reflection;
 using Orchid.Core.Sync;
 using Orchid.Core.Sync.Relay;
 using Orchid.Desktop.Service;
+using Serilog;
 
 namespace Orchid.Desktop;
 
@@ -21,6 +23,8 @@ public static class MauiProgram
     /// <returns>구성된 <see cref="MauiApp"/> 인스턴스</returns>
     public static MauiApp CreateMauiApp()
     {
+        DesktopStartupLog.Initialize();
+        DesktopStartupLog.RecordPhase("maui-builder-create");
         MauiAppBuilder builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>();
@@ -31,6 +35,16 @@ public static class MauiProgram
         builder.Services.AddDesignSystem();
         builder.ConfigureLocalization();
         builder.ConfigureIdentity();
+        builder.Logging
+            .AddFilter(
+                "Microsoft.AspNetCore.Components.RenderTree.Renderer",
+                LogLevel.Warning)
+            .AddFilter(
+                "Microsoft.Extensions.Localization.ResourceManagerStringLocalizer",
+                LogLevel.Warning)
+            .AddFilter("Microsoft", LogLevel.Warning)
+            .AddFilter("System", LogLevel.Warning)
+            .AddSerilog(Log.Logger, dispose: false);
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
@@ -40,7 +54,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAesGcmCryptoService, AesGcmCryptoService>();
 
         string dbPath = Path.Combine(FileSystem.AppDataDirectory, "orchid.db");
-        builder.Services.AddSingleton<IClipboardRepository>(_ => new SqliteClipboardRepository(dbPath));
+        builder.Services.AddSingleton(_ => new ObservableClipboardRepository(new SqliteClipboardRepository(dbPath)));
+        builder.Services.AddSingleton<IClipboardRepository>(sp => sp.GetRequiredService<ObservableClipboardRepository>());
         builder.Services.AddSingleton<ISyncEngine, SyncEngine>();
 
         string relayUrl = typeof(MauiProgram).Assembly
@@ -55,6 +70,8 @@ public static class MauiProgram
 #endif
         builder.Services.AddSingleton<ClipboardSyncCoordinator>();
 
-        return builder.Build();
+        MauiApp app = builder.Build();
+        DesktopStartupLog.RecordPhase("maui-app-built");
+        return app;
     }
 }

@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#F1E4CA" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.78" Color="#F1E4CA" />
     <EmbeddedResource Include="Resources\appsettings.Staging.json" />
     <Content Update="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -59,6 +59,10 @@
     <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Microsoft.Maui.Controls" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Garden.Razor" />
     <PackageReference Include="Garden.Share" />
   </ItemGroup>

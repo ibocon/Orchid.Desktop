@@ -25,6 +25,9 @@
 .PARAMETER PassThru
     지정 시 기동된 프로세스(System.Diagnostics.Process) 또는 빌드 결과 객체를 반환한다.
 
+.PARAMETER NoLog
+    지정 시 앱 로그를 실시간으로 출력하지 않고 기동 직후 반환한다.
+
 .EXAMPLE
     pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Start-OrchidDesktopStaging.ps1
     Staging 사전 점검 후 Debug 빌드 및 앱 실행을 수행한다.
@@ -47,6 +50,8 @@ param(
 
     [switch] $PassThru,
 
+    [switch] $NoLog,
+
     [Parameter(DontShow)]
     [string] $RepositoryRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).Path,
 
@@ -56,6 +61,107 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [Text.UTF8Encoding]::new($false)
+
+function Get-OrchidDesktopLogFile {
+    [OutputType([System.IO.FileInfo])]
+    param(
+        [Parameter(Mandatory)]
+        [datetime] $StartedAt,
+
+        [Parameter(Mandatory)]
+        [string] $LogRoot,
+
+        [ValidateRange(1, 120)]
+        [int] $TimeoutSeconds = 60
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-Path -LiteralPath $LogRoot -PathType Container) {
+            $logFile = Get-ChildItem -LiteralPath $LogRoot -Filter 'app*.log' -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.LastWriteTime -ge $StartedAt.AddSeconds(-2) } |
+                Sort-Object -Property LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $logFile) {
+                return $logFile
+            }
+        }
+
+        Start-Sleep -Milliseconds 300
+    }
+
+    return $null
+}
+
+function Format-OrchidDesktopLogEntry {
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [hashtable] $Entry,
+
+        [Parameter(Mandatory)]
+        [int] $ProcessId
+    )
+
+    if ($Entry['ProcessId'] -ne $ProcessId) {
+        return $null
+    }
+
+    $level = if ($Entry['@l']) { [string] $Entry['@l'] } else { 'Information' }
+    $text = if ($Entry['@m']) {
+        [string] $Entry['@m']
+    }
+    elseif ($Entry['@mt']) {
+        [regex]::Replace([string] $Entry['@mt'], '\{@?([A-Za-z0-9_]+)(?:[:,][^}]*)?\}', {
+                param($match)
+                $key = $match.Groups[1].Value
+                if ($Entry.ContainsKey($key)) { "$($Entry[$key])" } else { $match.Value }
+            })
+    }
+    else {
+        return $null
+    }
+
+    $time = if ($Entry['@t']) { ([datetime] $Entry['@t']).ToLocalTime().ToString('HH:mm:ss.fff') } else { '' }
+    $sourceContext = if ($Entry['SourceContext']) { "$($Entry['SourceContext']) " } else { '' }
+    $line = "[$time $($level.Substring(0, [Math]::Min(3, $level.Length)).ToUpper())] $sourceContext$text"
+    if ($Entry['@x']) {
+        $line += "`n$($Entry['@x'])"
+    }
+
+    return $line
+}
+
+function Receive-OrchidDesktopLogTail {
+    param(
+        [Parameter(Mandatory)]
+        [System.IO.FileInfo] $LogFile,
+
+        [Parameter(Mandatory)]
+        [int] $ProcessId
+    )
+
+    $esc = [char] 27
+    $colors = @{ Verbose = 90; Debug = 90; Information = 39; Warning = 33; Error = 31; Fatal = 35 }
+    Get-Content -LiteralPath $LogFile.FullName -Wait -Encoding utf8 | ForEach-Object {
+        try {
+            $entry = $_ | ConvertFrom-Json -AsHashtable
+        }
+        catch {
+            return
+        }
+
+        $line = Format-OrchidDesktopLogEntry -Entry $entry -ProcessId $ProcessId
+        if ($null -eq $line) {
+            return
+        }
+
+        $level = if ($entry['@l']) { [string] $entry['@l'] } else { 'Information' }
+        $colorCode = if ($colors.ContainsKey($level)) { $colors[$level] } else { 39 }
+        Write-Host "$esc[${colorCode}m$line$esc[0m"
+    }
+}
 
 $NormalizedRelayUrl = $RelayUrl.TrimEnd('/')
 $NegotiateUri = "$NormalizedRelayUrl/hubs/clipboard/negotiate?negotiateVersion=1"
@@ -127,11 +233,26 @@ if ($BuildOnly) {
 $PreviousEnv = [Environment]::GetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Process')
 try {
     [Environment]::SetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Staging', 'Process')
+    $StartedAt = Get-Date
     $Process = Start-Process -FilePath $ExeCandidate.FullName -WorkingDirectory $ExeCandidate.DirectoryName -PassThru
-    Write-Output "[orchid-desktop-staging] launched Orchid.Desktop.exe (PID=$($Process.Id), DOTNET_ENVIRONMENT=Staging)"
-    if ($PassThru) {
-        return $Process
+    Write-Host "Orchid.Desktop 시작됨. (PID $($Process.Id), DOTNET_ENVIRONMENT=Staging)"
+    if ($NoLog -or $PassThru) {
+        if ($PassThru) {
+            return $Process
+        }
+
+        return
     }
+
+    $LogRoot = Join-Path $env:LOCALAPPDATA 'BotanicSoft\Orchid\logs'
+    $LogFile = Get-OrchidDesktopLogFile -StartedAt $StartedAt -LogRoot $LogRoot
+    if ($null -eq $LogFile) {
+        Write-Warning "로그 파일을 찾지 못했습니다($LogRoot\app*.log). 앱이 아직 로그를 쓰지 않았을 수 있습니다."
+        return
+    }
+
+    Write-Host "로그: $($LogFile.FullName) (Ctrl+C 로 로그 보기만 종료하며 앱은 계속 실행됩니다)"
+    Receive-OrchidDesktopLogTail -LogFile $LogFile -ProcessId $Process.Id
 }
 finally {
     [Environment]::SetEnvironmentVariable('DOTNET_ENVIRONMENT', $PreviousEnv, 'Process')

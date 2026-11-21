@@ -1,0 +1,13 @@
+{
+  "lsp": {
+    "csharp": {
+      "command": [
+        "lib\\Garden.Harness\\src\\opencode\\lsp-bin\\csharp-ls-scoped.cmd"
+      ],
+      "extensions": [
+        ".cs"
+      ],
+      "priority": 100
+    }
+  }
+}

@@ -33,6 +33,7 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
 
     private readonly IdentityOptions _identityOptions;
     private readonly Func<Uri, Process?> _browserLauncher;
+    private readonly Func<HttpClient> _httpClientFactory;
     private readonly Lock _activeSignInLock = new();
     private CancellationTokenSource? _activeSignInCts;
     private TcpListener? _activeListener;
@@ -72,9 +73,18 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
     public OrchidDesktopAuthService(
         IOptions<IdentityOptions>? identityOptions,
         Func<Uri, Process?>? browserLauncher = null)
+        : this(identityOptions, browserLauncher, null)
+    {
+    }
+
+    internal OrchidDesktopAuthService(
+        IOptions<IdentityOptions>? identityOptions,
+        Func<Uri, Process?>? browserLauncher,
+        Func<HttpClient>? httpClientFactory)
     {
         _identityOptions = identityOptions?.Value ?? CreateDefaultIdentityOptions();
         _browserLauncher = browserLauncher ?? OpenSystemBrowser;
+        _httpClientFactory = httpClientFactory ?? CreateHttpClient;
     }
 
     /// <inheritdoc />
@@ -224,7 +234,6 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
             }
 
             await ExchangeCodeOrFallbackAsync(
-                    provider,
                     endpoint,
                     callbackResult.Code,
                     redirectUri,
@@ -257,9 +266,7 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
     public Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        IsAuthenticated = false;
-        CurrentUserName = string.Empty;
-        CurrentUserEmail = string.Empty;
+        ClearAuthentication();
         return Task.CompletedTask;
     }
 
@@ -590,7 +597,6 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
     }
 
     private async Task ExchangeCodeOrFallbackAsync(
-        string provider,
         OidcProviderEndpoint endpoint,
         string code,
         string redirectUri,
@@ -599,7 +605,7 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
     {
         try
         {
-            using HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
+            using HttpClient httpClient = _httpClientFactory();
             using FormUrlEncodedContent form = new(new Dictionary<string, string>
             {
                 ["grant_type"] = "authorization_code",
@@ -618,18 +624,31 @@ public sealed partial class OrchidDesktopAuthService : IOrchidDesktopAuthService
                 if (TryExtractProfileFromTokenResponse(doc.RootElement, out string? name, out string? email))
                 {
                     CurrentUserName = name!;
-                    CurrentUserEmail = email ?? $"{provider.Trim().ToLowerInvariant()}@botanicsoft.com";
+                    CurrentUserEmail = email ?? string.Empty;
                     IsAuthenticated = true;
                     return;
                 }
             }
         }
-        catch
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or FormatException)
         {
-            // 토큰 엔드포인트 전환 전 환경에서는 공급자 프로필로 세션을 완료한다.
+            ClearAuthentication();
+            return;
         }
 
-        await SignInWithProviderAsync(provider, cancellationToken).ConfigureAwait(false);
+        ClearAuthentication();
+    }
+
+    private static HttpClient CreateHttpClient()
+    {
+        return new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+    }
+
+    private void ClearAuthentication()
+    {
+        IsAuthenticated = false;
+        CurrentUserName = string.Empty;
+        CurrentUserEmail = string.Empty;
     }
 
     private static bool TryExtractProfileFromTokenResponse(

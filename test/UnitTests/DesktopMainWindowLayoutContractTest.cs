@@ -10,31 +10,33 @@ namespace Orchid.UnitTests.Desktop;
 public sealed class DesktopMainWindowLayoutContractTest
 {
     [Fact]
-    public void GivenMainWindowLayoutWhenInspectingConstantsThenMatchesDesktopBaseline()
+    public void GivenMainWindowLayoutWhenInspectingConstantsThenInitialHeightFitsLoginAndMinimumIsPreserved()
     {
         // Given
         const double expectedWidth = 780;
-        const double expectedHeight = 585;
+        const double expectedInitialHeight = 720;
+        const double expectedMinimumHeight = 585;
 
         // When & Then
         MainWindowLayout.Width.Should().Be(expectedWidth);
-        MainWindowLayout.Height.Should().Be(expectedHeight);
+        MainWindowLayout.Height.Should().Be(expectedInitialHeight);
         MainWindowLayout.MinimumWidth.Should().Be(expectedWidth);
-        MainWindowLayout.MinimumHeight.Should().Be(expectedHeight);
+        MainWindowLayout.MinimumHeight.Should().Be(expectedMinimumHeight);
     }
 
     [Fact]
-    public void GivenAppCreateWindowWhenInspectingSourceThenAppliesMainWindowLayoutBounds()
+    public void GivenAppCreateWindowWhenInspectingSourceThenRestoresAndPersistsWindowSize()
     {
         // Given
         string repoRoot = FindRepositoryRoot();
         string appXamlCs = File.ReadAllText(Path.Combine(repoRoot, "src/App.xaml.cs"));
 
         // When & Then
-        appXamlCs.Should().Contain("double windowWidth = MainWindowLayout.Width");
-        appXamlCs.Should().Contain("double windowHeight = MainWindowLayout.Height");
-        appXamlCs.Should().Contain("Width = windowWidth");
-        appXamlCs.Should().Contain("Height = windowHeight");
+        appXamlCs.Should().Contain("MainWindowSizePolicy.Resolve(PreferencesWindowSizeStore.Load()");
+        appXamlCs.Should().Contain("PreferencesWindowSizeStore.Save(size)");
+        appXamlCs.Should().Contain("WindowRestoreState.IsRestored(window)");
+        appXamlCs.Should().Contain("window.Deactivated");
+        appXamlCs.Should().Contain("window.Destroying");
         appXamlCs.Should().Contain("MinimumWidth = MainWindowLayout.MinimumWidth");
         appXamlCs.Should().Contain("MinimumHeight = MainWindowLayout.MinimumHeight");
     }
