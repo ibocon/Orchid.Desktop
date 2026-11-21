@@ -58,33 +58,48 @@ public sealed class DesktopVisualAssetsContractTest
         csproj.Should().Contain("<ApplicationIcon>Resources\\AppIcon\\appicon.ico</ApplicationIcon>");
     }
 
-    [Theory]
-    [InlineData("src/Resources/AppIcon/appiconfg.svg")]
-    [InlineData("src/wwwroot/logo-login.svg")]
-    public void BotanicalOrchidForegroundAndLoginLogoShouldUseFamilyTokensAndTransparentBackground(string relativePath)
+    [Fact]
+    public void AppIconForegroundShouldUseSameIllustrationAsLoginMark()
     {
         // Given
         string repoRoot = FindRepositoryRoot();
-        string svg = File.ReadAllText(Path.Combine(repoRoot, relativePath));
+        string foreground = File.ReadAllText(Path.Combine(repoRoot, "src/Resources/AppIcon/appiconfg.svg"));
+        string generator = File.ReadAllText(Path.Combine(repoRoot, "scripts/New-OrchidBrandVisualAssets.ps1"));
 
         // When & Then
-        // ✅ Peony.Mobile 공통 잉크(#6D5443)·잎(#78D978) 토큰과 카틀레야/호접란 5화피·프릴 설판·화통 토큰(#EADDFF, #B69DF8, #9A82DB, #6750A4, #F6C667, #FFE2E4)을 사용하며 불투명 배경이나 레거시 그라데이션이 없다
-        svg.Should().Contain("#6D5443");
-        svg.Should().Contain("#78D978");
-        svg.Should().Contain("#EADDFF");
-        svg.Should().Contain("#B69DF8");
-        svg.Should().Contain("#9A82DB");
-        svg.Should().Contain("#6750A4");
-        svg.Should().Contain("#F6C667");
-        svg.Should().Contain("#FFE2E4");
-        svg.Should().Contain("sepal-lower-left");
-        svg.Should().Contain("sepal-lower-right");
-        svg.Should().Contain("labellum-throat");
-        svg.Should().NotContain("linearGradient");
-        svg.Should().NotContain("radialGradient");
-        svg.Should().NotContain("#1E1B4B");
-        svg.Should().NotContain("#7C3AED");
-        svg.Should().NotContain("fill:#F1E4CA");
+        // ✅ 작업표시줄 아이콘과 앱 내 로고는 동일한 다색 일러스트를 사용한다.
+        foreground.Should().Contain("id=\"petal-top\"");
+        foreground.Should().Contain("id=\"orchid-throat\"");
+        foreground.Should().Contain("#A8796A");
+        foreground.Should().NotContain("id=\"icon-tile\"");
+        foreground.Should().NotContain("taskbar-orchid");
+        generator.Should().NotContain("Draw-TaskbarOrchidGlyph");
+        generator.Should().Contain("Draw-CompactOrchidMark -G $G");
+    }
+
+    [Fact]
+    public void LoginMarkAndDesktopCanvasShouldRemainSimpleAndTransparent()
+    {
+        // Given
+        string repoRoot = FindRepositoryRoot();
+        string svg = File.ReadAllText(Path.Combine(repoRoot, "src/wwwroot/logo-login.svg"));
+        string appCss = File.ReadAllText(Path.Combine(repoRoot, "src/wwwroot/css/app.css"));
+
+        // When & Then
+        // ✅ 로그인 마크는 세 꽃잎과 작은 중심부만 남기고 데스크톱 캔버스는 투명하다.
+        svg.Should().Contain("#A96C8E");
+        svg.Should().Contain("#E9B2B8");
+        svg.Should().Contain("#D3BEDD");
+        svg.Should().Contain("#A8796A");
+        svg.Should().Contain("id=\"petal-top\"");
+        svg.Should().Contain("id=\"petal-left\"");
+        svg.Should().Contain("id=\"petal-right\"");
+        svg.Should().Contain("id=\"orchid-core\"");
+        svg.Should().Contain("id=\"orchid-throat\"");
+        svg.Should().NotContain("id=\"stem\"");
+        svg.Should().NotContain("vein");
+        appCss.Should().Contain("background-color: transparent;");
+        appCss.Should().NotContain("background-color: var(--gdn-sys-color-surface);");
     }
 
     private static string FindRepositoryRoot()

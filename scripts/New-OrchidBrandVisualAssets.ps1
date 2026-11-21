@@ -13,7 +13,8 @@
 [CmdletBinding()]
 param(
     [string] $DesktopRepoRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).Path,
-    [string] $MobileRepoRoot = 'D:\Source\BotanicSoft\Orchid.Mobile'
+    [string] $MobileRepoRoot = 'D:\Source\BotanicSoft\Orchid.Mobile',
+    [switch] $IcoOnly
 )
 
 Set-StrictMode -Version Latest
@@ -226,13 +227,82 @@ function Draw-OrchidSymbol {
     $ColumnPen.Dispose(); $ColumnBrush.Dispose(); $ColumnPath.Dispose()
 }
 
+function Draw-CompactOrchidMark {
+    param(
+        [System.Drawing.Graphics] $G,
+        [float] $CenterX,
+        [float] $CenterY,
+        [float] $Size
+    )
+
+    $Scale = $Size / 1024.0
+
+    function New-MarkPoint {
+        param([double] $Px, [double] $Py)
+
+        return [System.Drawing.PointF]::new(
+            [float]($CenterX + ($Px - 512.0) * $Scale),
+            [float]($CenterY + ($Py - 512.0) * $Scale))
+    }
+
+    function New-MarkPath {
+        param([double[]] $Coordinates)
+
+        $Path = [System.Drawing.Drawing2D.GraphicsPath]::new()
+        $Path.StartFigure()
+        for ($I = 0; $I -lt $Coordinates.Count; $I += 8) {
+            $Path.AddBezier(
+                (New-MarkPoint $Coordinates[$I] $Coordinates[$I + 1]),
+                (New-MarkPoint $Coordinates[$I + 2] $Coordinates[$I + 3]),
+                (New-MarkPoint $Coordinates[$I + 4] $Coordinates[$I + 5]),
+                (New-MarkPoint $Coordinates[$I + 6] $Coordinates[$I + 7]))
+        }
+        $Path.CloseFigure()
+        return $Path
+    }
+
+    $Ink = [System.Drawing.Color]::FromArgb(255, 168, 121, 106)
+    $Outline = [System.Drawing.Pen]::new($Ink, [float][Math]::Max(1.2, 16 * $Scale))
+    $Outline.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+    $Outline.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $Outline.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+
+    foreach ($Petal in @(
+            @{ Color = [System.Drawing.Color]::FromArgb(255, 211, 190, 221); Coordinates = @(512, 176, 452, 246, 452, 356, 512, 440, 512, 440, 572, 356, 572, 246, 512, 176) },
+            @{ Color = [System.Drawing.Color]::FromArgb(255, 233, 178, 184); Coordinates = @(494, 406, 428, 336, 326, 320, 256, 356, 256, 356, 198, 362, 164, 406, 170, 462, 170, 462, 176, 516, 214, 554, 268, 562, 268, 562, 320, 620, 418, 596, 486, 526) },
+            @{ Color = [System.Drawing.Color]::FromArgb(255, 233, 178, 184); Coordinates = @(530, 406, 596, 336, 698, 320, 768, 356, 768, 356, 826, 362, 860, 406, 854, 462, 854, 462, 848, 516, 810, 554, 756, 562, 756, 562, 704, 620, 606, 596, 538, 526) })) {
+        $Path = New-MarkPath -Coordinates $Petal.Coordinates
+        $Brush = [System.Drawing.SolidBrush]::new($Petal.Color)
+        $G.FillPath($Brush, $Path)
+        $G.DrawPath($Outline, $Path)
+        $Brush.Dispose(); $Path.Dispose()
+    }
+
+    $CorePath = New-MarkPath -Coordinates @(512, 470, 462, 470, 426, 508, 434, 552, 434, 552, 404, 580, 414, 624, 450, 634, 450, 634, 458, 672, 492, 692, 512, 664, 512, 664, 532, 692, 566, 672, 574, 634, 574, 634, 610, 624, 620, 580, 590, 552, 590, 552, 598, 508, 562, 470, 512, 470)
+    $CoreBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 169, 108, 142))
+    $G.FillPath($CoreBrush, $CorePath)
+    $G.DrawPath($Outline, $CorePath)
+    $CoreBrush.Dispose(); $CorePath.Dispose()
+
+    $ThroatBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 237, 194, 97))
+    $ThroatRect = [System.Drawing.RectangleF]::new(
+        [float]($CenterX - 32 * $Scale),
+        [float]($CenterY + (-12 * $Scale)),
+        [float](64 * $Scale),
+        [float](88 * $Scale))
+    $G.FillEllipse($ThroatBrush, $ThroatRect)
+    $G.DrawEllipse($Outline, $ThroatRect)
+    $ThroatBrush.Dispose(); $Outline.Dispose()
+}
+
 function Save-BrandCanvasPng {
     param(
         [Parameter(Mandatory)] [string] $Path,
         [Parameter(Mandatory)] [int] $Width,
         [Parameter(Mandatory)] [int] $Height,
         [string] $Title = '',
-        [string] $Subtitle = ''
+        [string] $Subtitle = '',
+        [switch] $RoundedTile
     )
 
     $Dir = Split-Path -Path $Path -Parent
@@ -247,19 +317,35 @@ function Save-BrandCanvasPng {
     $G.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
     $G.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
 
-    # BotanicSoft / Peony 공통 크림 배경 (#F1E4CA)
+    # BotanicSoft / Peony 공통 크림 배경 (#F1E4CA). ICO는 투명한 모서리의 둥근 타일을 사용한다.
     $Rect = [System.Drawing.Rectangle]::new(0, 0, $Width, $Height)
     $BgBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(255, 241, 228, 202))
-    $G.FillRectangle($BgBrush, $Rect)
+    if ($RoundedTile.IsPresent) {
+        $Bmp.MakeTransparent()
+        $Inset = [int][Math]::Max(1, [Math]::Round([Math]::Min($Width, $Height) * 0.06))
+        $Diameter = [int][Math]::Max(2, [Math]::Round([Math]::Min($Width, $Height) * 0.38))
+        $Tile = [System.Drawing.Rectangle]::new($Inset, $Inset, $Width - ($Inset * 2), $Height - ($Inset * 2))
+        $TilePath = [System.Drawing.Drawing2D.GraphicsPath]::new()
+        $TilePath.AddArc($Tile.X, $Tile.Y, $Diameter, $Diameter, 180, 90)
+        $TilePath.AddArc($Tile.Right - $Diameter, $Tile.Y, $Diameter, $Diameter, 270, 90)
+        $TilePath.AddArc($Tile.Right - $Diameter, $Tile.Bottom - $Diameter, $Diameter, $Diameter, 0, 90)
+        $TilePath.AddArc($Tile.X, $Tile.Bottom - $Diameter, $Diameter, $Diameter, 90, 90)
+        $TilePath.CloseFigure()
+        $G.FillPath($BgBrush, $TilePath)
+        $TilePath.Dispose()
+    }
+    else {
+        $G.FillRectangle($BgBrush, $Rect)
+    }
     $BgBrush.Dispose()
 
     if ([string]::IsNullOrWhiteSpace($Title)) {
-        $SymbolSize = [float]([Math]::Min($Width, $Height) * 0.92)
-        Draw-OrchidSymbol -G $G -CenterX ($Width / 2.0) -CenterY ($Height / 2.0) -Size $SymbolSize
+        $SymbolSize = [float]([Math]::Min($Width, $Height) * $(if ($RoundedTile.IsPresent) { 1.0 } else { 0.92 }))
+        Draw-CompactOrchidMark -G $G -CenterX ($Width / 2.0) -CenterY ($Height / 2.0) -Size $SymbolSize
     }
     else {
         $IconSize = [float]([Math]::Min($Width, $Height) * 0.56)
-        Draw-OrchidSymbol -G $G -CenterX ($Width * 0.19) -CenterY ($Height * 0.5) -Size $IconSize
+        Draw-CompactOrchidMark -G $G -CenterX ($Width * 0.19) -CenterY ($Height * 0.5) -Size $IconSize
 
         $TitleSize = [float]([Math]::Max(18.0, $Width * 0.032))
         $SubSize = [float]([Math]::Max(11.0, $Width * 0.0155))
@@ -283,63 +369,79 @@ function Save-BrandCanvasPng {
     $Bmp.Dispose()
 }
 
-function Save-PngAsIco {
+function Save-PngsAsIco {
     param(
-        [Parameter(Mandatory)] [string] $PngPath,
+        [Parameter(Mandatory)] [string[]] $PngPaths,
         [Parameter(Mandatory)] [string] $IcoPath
     )
 
-    $PngBytes = [System.IO.File]::ReadAllBytes($PngPath)
     $Dir = Split-Path -Path $IcoPath -Parent
     if (-not (Test-Path -LiteralPath $Dir)) {
         $null = New-Item -ItemType Directory -Path $Dir -Force
     }
 
+    $Images = foreach ($PngPath in $PngPaths) {
+        $Bytes = [System.IO.File]::ReadAllBytes($PngPath)
+        # PNG IHDR: width at offset 16 (big-endian)
+        $Size = ([int]$Bytes[18] -shl 8) -bor [int]$Bytes[19]
+        [pscustomobject]@{ Size = $Size; Bytes = $Bytes }
+    }
+
     $Ms = [System.IO.MemoryStream]::new()
     $Bw = [System.IO.BinaryWriter]::new($Ms)
-    # ICONDIR header (Reserved=0, Type=1, Count=1)
     $Bw.Write([uint16]0)
     $Bw.Write([uint16]1)
-    $Bw.Write([uint16]1)
-    # ICONDIRENTRY (256x256 stored as 0,0)
-    $Bw.Write([byte]0)
-    $Bw.Write([byte]0)
-    $Bw.Write([byte]0)
-    $Bw.Write([byte]0)
-    $Bw.Write([uint16]1)
-    $Bw.Write([uint16]32)
-    $Bw.Write([uint32]$PngBytes.Length)
-    $Bw.Write([uint32]22)
-    $Bw.Write($PngBytes)
+    $Bw.Write([uint16]@($Images).Count)
+    $Offset = 6 + 16 * @($Images).Count
+    foreach ($Image in $Images) {
+        $Dim = if ($Image.Size -ge 256) { [byte]0 } else { [byte]$Image.Size }
+        $Bw.Write($Dim)
+        $Bw.Write($Dim)
+        $Bw.Write([byte]0)
+        $Bw.Write([byte]0)
+        $Bw.Write([uint16]1)
+        $Bw.Write([uint16]32)
+        $Bw.Write([uint32]$Image.Bytes.Length)
+        $Bw.Write([uint32]$Offset)
+        $Offset += $Image.Bytes.Length
+    }
+    foreach ($Image in $Images) {
+        $Bw.Write($Image.Bytes)
+    }
     $Bw.Flush()
     [System.IO.File]::WriteAllBytes($IcoPath, $Ms.ToArray())
     $Bw.Dispose()
     $Ms.Dispose()
 }
 
-$DesktopAssets = Join-Path -Path $DesktopRepoRoot -ChildPath 'src\Assets'
-Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'StoreLogo.png') -Width 50 -Height 50
-Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Square44x44Logo.png') -Width 44 -Height 44
-Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Square150x150Logo.png') -Width 150 -Height 150
-Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Wide310x150Logo.png') -Width 310 -Height 150
+if (-not $IcoOnly) {
+    $DesktopAssets = Join-Path -Path $DesktopRepoRoot -ChildPath 'src\Assets'
+    Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'StoreLogo.png') -Width 50 -Height 50
+    Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Square44x44Logo.png') -Width 44 -Height 44
+    Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Square150x150Logo.png') -Width 150 -Height 150
+    Save-BrandCanvasPng -Path (Join-Path $DesktopAssets 'Wide310x150Logo.png') -Width 310 -Height 150
 
-$StoreLogo300 = Join-Path -Path $DesktopRepoRoot -ChildPath 'docs\release\windows-store\store-logo-300x300.png'
-Save-BrandCanvasPng -Path $StoreLogo300 -Width 300 -Height 300
+    $StoreLogo300 = Join-Path -Path $DesktopRepoRoot -ChildPath 'docs\release\windows-store\store-logo-300x300.png'
+    Save-BrandCanvasPng -Path $StoreLogo300 -Width 300 -Height 300
 
-$DesktopScreenshot = Join-Path -Path $DesktopRepoRoot -ChildPath 'docs\release\windows-store\screenshots\desktop-main.png'
-Save-BrandCanvasPng `
-    -Path $DesktopScreenshot `
-    -Width 1366 `
-    -Height 768 `
-    -Title 'Universal Clipboard Bridge' `
-    -Subtitle 'AES-256-GCM End-to-End Encrypted Clipboard Sync Across PC, Mobile & Web'
+    $DesktopScreenshot = Join-Path -Path $DesktopRepoRoot -ChildPath 'docs\release\windows-store\screenshots\desktop-main.png'
+    Save-BrandCanvasPng `
+        -Path $DesktopScreenshot `
+        -Width 1366 `
+        -Height 768 `
+        -Title 'Universal Clipboard Bridge' `
+        -Subtitle 'AES-256-GCM End-to-End Encrypted Clipboard Sync Across PC, Mobile & Web'
+}
 
-$TempIcoPng = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'orchid-ico-256.png'
-Save-BrandCanvasPng -Path $TempIcoPng -Width 256 -Height 256
-Save-PngAsIco -PngPath $TempIcoPng -IcoPath (Join-Path -Path $DesktopRepoRoot -ChildPath 'src\Resources\AppIcon\appicon.ico')
-Remove-Item -LiteralPath $TempIcoPng -Force -ErrorAction SilentlyContinue
+$IcoPngs = foreach ($IcoSize in 16, 24, 32, 48, 64, 256) {
+    $TempPng = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "orchid-ico-$IcoSize.png"
+    Save-BrandCanvasPng -Path $TempPng -Width $IcoSize -Height $IcoSize -RoundedTile
+    $TempPng
+}
+Save-PngsAsIco -PngPaths $IcoPngs -IcoPath (Join-Path -Path $DesktopRepoRoot -ChildPath 'src/Resources/AppIcon/appicon.ico')
+Remove-Item -LiteralPath $IcoPngs -Force -ErrorAction SilentlyContinue
 
-if (Test-Path -LiteralPath $MobileRepoRoot) {
+if (-not $IcoOnly -and (Test-Path -LiteralPath $MobileRepoRoot)) {
     foreach ($SvgRelPath in @(
             'src\Resources\AppIcon\appicon.svg',
             'src\Resources\AppIcon\appiconfg.svg',
